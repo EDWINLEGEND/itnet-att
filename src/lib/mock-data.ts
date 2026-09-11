@@ -1,8 +1,19 @@
-import { AttendanceRecord, ShiftType } from "@/types/attendance";
+import { AttendanceRecord, ShiftType, OfficialHoliday } from "@/types/attendance";
 import { USERS } from "./constants";
-import { format, subDays, getDay, isAfter, startOfDay } from "date-fns";
+import {
+  format,
+  getDay,
+  isAfter,
+  isBefore,
+  startOfDay,
+  parseISO,
+  differenceInDays,
+  addDays,
+} from "date-fns";
 
-const STORAGE_KEY = "itnet_attendance_records_v1";
+export const ATTENDANCE_START_DATE = "2026-09-07";
+const STORAGE_KEY = "itnetai_attendance_records_v3";
+const HOLIDAYS_STORAGE_KEY = "itnetai_official_holidays_v1";
 
 // Simple pseudo-random deterministic generator for consistent demo data
 function pseudoRandom(seed: number) {
@@ -13,22 +24,25 @@ function pseudoRandom(seed: number) {
 export function generateSeedRecords(): Record<string, AttendanceRecord> {
   const records: Record<string, AttendanceRecord> = {};
   const today = startOfDay(new Date());
+  const startDate = parseISO(ATTENDANCE_START_DATE);
   const employees = USERS.filter((u) => u.role === "employee");
 
-  // Generate 120 days (~4 months) of historical attendance
-  for (let d = 120; d >= 0; d--) {
-    const currentDate = subDays(today, d);
+  const totalDays = Math.max(0, differenceInDays(today, startDate));
+
+  // Generate records strictly from September 7th up to today
+  for (let d = 0; d <= totalDays; d++) {
+    const currentDate = addDays(startDate, d);
     const dateStr = format(currentDate, "yyyy-MM-dd");
     const dayOfWeek = getDay(currentDate); // 0 = Sun, 1 = Mon, ..., 6 = Sat
 
     // Sundays are non-working days
     if (dayOfWeek === 0) continue;
 
-    // For future dates, do not generate
+    // For future dates beyond today, do not generate
     if (isAfter(currentDate, today)) continue;
 
     employees.forEach((emp, empIndex) => {
-      const seed = d * 17 + empIndex * 131;
+      const seed = (d + 1) * 23 + empIndex * 149;
       const rand = pseudoRandom(seed);
 
       let shiftType: ShiftType;
@@ -36,25 +50,21 @@ export function generateSeedRecords(): Record<string, AttendanceRecord> {
       let checkOutTime: string | undefined;
       let notes: string | undefined;
 
-      // Realistic distribution for Mon-Sat:
-      // ~84% Full Shift, ~6% Morning Half, ~5% Afternoon Half, ~5% Leave
-      if (rand < 0.84) {
+      // Clean distribution for workdays from Sep 7:
+      if (rand < 0.85) {
         shiftType = "full";
         checkInTime = "09:55 AM";
         checkOutTime = "06:05 PM";
-      } else if (rand < 0.90) {
+      } else if (rand < 0.93) {
         shiftType = "half_morning";
         checkInTime = "09:58 AM";
         checkOutTime = "02:00 PM";
-        notes = "Personal errand in afternoon";
-      } else if (rand < 0.95) {
+        notes = "Morning shift completed";
+      } else {
         shiftType = "half_afternoon";
         checkInTime = "01:55 PM";
         checkOutTime = "06:00 PM";
-        notes = "Medical checkup in morning";
-      } else {
-        shiftType = "leave";
-        notes = "Approved casual leave";
+        notes = "Afternoon shift completed";
       }
 
       const key = `${emp.id}_${dateStr}`;
@@ -112,4 +122,39 @@ export function clearStoredRecords(): Record<string, AttendanceRecord> {
   const fresh = generateSeedRecords();
   saveStoredRecords(fresh);
   return fresh;
+}
+
+// Official Holidays Persistence Helpers
+export function loadStoredHolidays(): Record<string, OfficialHoliday> {
+  if (typeof window === "undefined") {
+    return {};
+  }
+
+  try {
+    const raw = localStorage.getItem(HOLIDAYS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed) return parsed;
+    }
+  } catch (err) {
+    console.error("Failed to load official holidays from localStorage", err);
+  }
+
+  return {};
+}
+
+export function saveStoredHolidays(holidays: Record<string, OfficialHoliday>) {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(HOLIDAYS_STORAGE_KEY, JSON.stringify(holidays));
+  } catch (err) {
+    console.error("Failed to save official holidays to localStorage", err);
+  }
+}
+
+export function clearStoredHolidays(): Record<string, OfficialHoliday> {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem(HOLIDAYS_STORAGE_KEY);
+  }
+  return {};
 }

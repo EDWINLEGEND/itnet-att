@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Trash2, AlertCircle } from "lucide-react";
+import { Check, Trash2, AlertCircle, Sparkles } from "lucide-react";
 
 interface MarkAttendanceModalProps {
   isOpen: boolean;
@@ -60,7 +60,7 @@ function MarkAttendanceContent({
   targetUser,
   initialDate,
 }: Omit<MarkAttendanceModalProps, "isOpen">) {
-  const { records, markAttendance, deleteAttendance, currentUser, users } = useAttendance();
+  const { records, markAttendance, deleteAttendance, currentUser, users, isOfficialHoliday } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
   const [activeUserId, setActiveUserId] = useState<string>(targetUser.id);
@@ -119,6 +119,7 @@ function MarkAttendanceContent({
 
   const dayOfWeek = getDay(parsedDate);
   const isSunday = dayOfWeek === 0;
+  const officialHoliday = isOfficialHoliday(selectedDate);
 
   const currentRecord = records[`${activeUserId}_${selectedDate}`];
   const isPlannedLeave = currentRecord?.shiftType === "leave" && currentRecord?.notes?.includes("Planned Leave");
@@ -255,6 +256,21 @@ function MarkAttendanceContent({
           {isPlannedLeave && (
             <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300">
               <span className="font-semibold">Pre-Marked Leave:</span> Switch this to a Full/Half shift or click Delete below to cancel.
+            </div>
+          )}
+
+          {officialHoliday && (
+            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
+              <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
+              <div>
+                <div className="font-semibold flex items-center gap-1.5">
+                  <span>Official Holiday:</span>
+                  <span className="text-foreground font-medium">{officialHoliday.title}</span>
+                </div>
+                <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  Declared company holiday for all ITNETAI team members. Work is not required and attendance is not penalized.
+                </div>
+              </div>
             </div>
           )}
 

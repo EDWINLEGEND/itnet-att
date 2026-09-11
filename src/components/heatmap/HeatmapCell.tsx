@@ -17,7 +17,7 @@ interface HeatmapCellProps {
 }
 
 export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
-  const { date, dateObj, dayOfWeek, isSunday, isFuture, isToday, record } = day;
+  const { date, dateObj, dayOfWeek, isSunday, isFuture, isToday, record, isHoliday, holidayTitle } = day;
   const shiftType = record?.shiftType;
 
   // Exact GitHub-style square dimensions
@@ -30,7 +30,11 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
   let cellInner: React.ReactNode = null;
   let cellClass = "relative outline-none cursor-pointer transition-all duration-75 select-none ";
 
-  if (isSunday) {
+  if (isHoliday) {
+    // Official company holiday
+    cellClass +=
+      "bg-amber-400 dark:bg-amber-500 border border-amber-600/40 hover:brightness-110";
+  } else if (isSunday) {
     // Weekend / Sunday (Non-working day)
     cellClass +=
       "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/40 opacity-40 hover:opacity-100";
@@ -87,7 +91,9 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
           onClick={() => onClick && onClick(day)}
           className={`${dimensionClass} ${cellClass}`}
           aria-label={`${format(dateObj, "MMM d, yyyy")}: ${
-            shiftConfig?.label || (isSunday ? "Sunday Off" : "Leave")
+            isHoliday
+              ? `Holiday: ${holidayTitle || "Official Holiday"}`
+              : shiftConfig?.label || (isSunday ? "Sunday Off" : "Leave")
           }`}
         >
           {cellInner}
@@ -107,7 +113,20 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
         </div>
 
         <div className="space-y-0.5 text-zinc-300 text-[11px]">
-          {isSunday ? (
+          {isHoliday ? (
+            <div>
+              <div className="text-amber-400 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
+                <span>{holidayTitle || "Official Holiday"}</span>
+              </div>
+              <div className="text-zinc-400 text-[10px]">Company Official Holiday (Off)</div>
+              {shiftConfig && (
+                <div className="mt-1 pt-1 border-t border-zinc-800 text-emerald-400 text-[10px]">
+                  Logged shift: {shiftConfig.label}
+                </div>
+              )}
+            </div>
+          ) : isSunday ? (
             <span className="text-zinc-400">Sunday (Non-working day)</span>
           ) : isFuture && shiftType === "leave" ? (
             <div>

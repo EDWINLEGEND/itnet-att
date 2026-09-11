@@ -1,15 +1,26 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { User, AttendanceRecord, ShiftType, UserAttendanceStats } from "@/types/attendance";
+import { User, AttendanceRecord, ShiftType, UserAttendanceStats, OfficialHoliday } from "@/types/attendance";
 import { USERS } from "./constants";
-import { loadStoredRecords, saveStoredRecords, clearStoredRecords } from "./mock-data";
+import {
+  loadStoredRecords,
+  saveStoredRecords,
+  clearStoredRecords,
+  loadStoredHolidays,
+  saveStoredHolidays,
+  clearStoredHolidays,
+} from "./mock-data";
 import { format, subDays, addDays, getDay, isAfter, isBefore, startOfDay, parseISO } from "date-fns";
 
 interface AttendanceContextType {
   currentUser: User | null;
   users: User[];
   records: Record<string, AttendanceRecord>;
+  holidays: Record<string, OfficialHoliday>;
+  addHoliday: (date: string, title: string) => void;
+  deleteHoliday: (date: string) => void;
+  isOfficialHoliday: (date: string) => OfficialHoliday | undefined;
   login: (email: string, pass: string) => boolean;
   quickLogin: (userId: string) => void;
   logout: () => void;
@@ -25,11 +36,12 @@ interface AttendanceContextType {
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(undefined);
 
-const USER_SESSION_KEY = "itnet_active_user_id";
+const USER_SESSION_KEY = "itnetai_active_user_id";
 
 export function AttendanceProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [records, setRecords] = useState<Record<string, AttendanceRecord>>({});
+  const [holidays, setHolidays] = useState<Record<string, OfficialHoliday>>({});
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Initialize from storage on mount
@@ -37,6 +49,10 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     const loadedRecords = loadStoredRecords();
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecords(loadedRecords);
+
+    const loadedHolidays = loadStoredHolidays();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setHolidays(loadedHolidays);
 
     const savedUserId = localStorage.getItem(USER_SESSION_KEY);
     if (savedUserId) {
@@ -196,6 +212,30 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     [records]
   );
 
+  const addHoliday = useCallback((date: string, title: string) => {
+    setHolidays((prev) => {
+      const updated = {
+        ...prev,
+        [date]: { id: `holiday-${date}`, date, title: title.trim() || "Official Holiday" },
+      };
+      saveStoredHolidays(updated);
+      return updated;
+    });
+  }, []);
+
+  const deleteHoliday = useCallback((date: string) => {
+    setHolidays((prev) => {
+      const updated = { ...prev };
+      delete updated[date];
+      saveStoredHolidays(updated);
+      return updated;
+    });
+  }, []);
+
+  const isOfficialHoliday = useCallback((date: string) => {
+    return holidays[date];
+  }, [holidays]);
+
   const calculateUserStats = useCallback(
     (userId: string, daysBack = 120): UserAttendanceStats => {
       const today = startOfDay(new Date());
@@ -215,8 +255,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         const dateStr = format(checkDate, "yyyy-MM-dd");
         const dayOfWeek = getDay(checkDate); // 0 = Sun
 
-        // Skip Sunday
-        if (dayOfWeek === 0) continue;
+        // Skip Sunday & Official Holidays
+        if (dayOfWeek === 0 || holidays[dateStr]) continue;
 
         // Skip future
         if (isAfter(checkDate, today)) continue;
@@ -266,12 +306,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         currentStreak,
       };
     },
-    [records]
+    [records, holidays]
   );
 
   const resetDemoData = useCallback(() => {
     const fresh = clearStoredRecords();
+    const freshHolidays = clearStoredHolidays();
     setRecords(fresh);
+    setHolidays(freshHolidays);
   }, []);
 
   return (
@@ -280,6 +322,10 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         currentUser,
         users: USERS,
         records,
+        holidays,
+        addHoliday,
+        deleteHoliday,
+        isOfficialHoliday,
         login,
         quickLogin,
         logout,

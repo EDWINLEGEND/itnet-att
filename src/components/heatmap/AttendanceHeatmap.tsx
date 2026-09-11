@@ -38,7 +38,7 @@ export function AttendanceHeatmap({
   showStats = true,
   compact = false,
 }: AttendanceHeatmapProps) {
-  const { records, calculateUserStats } = useAttendance();
+  const { records, calculateUserStats, isOfficialHoliday } = useAttendance();
   const [selectedRange, setSelectedRange] = useState<number>(weeksCount);
 
   const stats = useMemo(
@@ -72,7 +72,9 @@ export function AttendanceHeatmap({
         const dateStr = format(dateObj, "yyyy-MM-dd");
         const dayOfWeek = getDay(dateObj);
         const isSunday = dayOfWeek === 0;
-        const isWorkDay = !isSunday;
+        const holiday = isOfficialHoliday(dateStr);
+        const isHoliday = !!holiday;
+        const isWorkDay = !isSunday && !isHoliday;
         const isFuture = isAfter(dateObj, today);
         const isToday = isSameDay(dateObj, today);
 
@@ -86,6 +88,8 @@ export function AttendanceHeatmap({
           isWorkDay,
           isFuture,
           isToday,
+          isHoliday,
+          holidayTitle: holiday?.title,
           record: rec,
         });
       }
@@ -93,7 +97,7 @@ export function AttendanceHeatmap({
     }
 
     return { weeks: weeksList, monthHeaders: months };
-  }, [selectedRange, records, user.id]);
+  }, [selectedRange, records, user.id, isOfficialHoliday]);
 
   const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -314,6 +318,12 @@ export function AttendanceHeatmap({
                 <div className="flex items-center gap-1 pl-2 border-l border-border">
                   <div className="w-3 h-3 rounded-[2px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800" />
                   <span className="text-muted-foreground/70">Sunday Off</span>
+                </div>
+
+                {/* Official Holiday */}
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-[2px] bg-amber-400 dark:bg-amber-500 border border-amber-600/40" />
+                  <span className="text-amber-600 dark:text-amber-400 font-medium">Holiday</span>
                 </div>
               </div>
             </div>

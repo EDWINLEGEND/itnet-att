@@ -5,10 +5,11 @@ import { User, DayAttendance, ShiftType } from "@/types/attendance";
 import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
 import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
+import { OfficialHolidaysModal } from "../admin/OfficialHolidaysModal";
 import { useAttendance } from "@/lib/attendance-context";
 import { SHIFT_CONFIGS } from "@/lib/constants";
 import { format, startOfDay, getDay } from "date-fns";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,8 +27,9 @@ import {
   FileSpreadsheet,
   TrendingUp,
   Calendar,
-  Edit3,
   Plane,
+  Sparkles,
+  Edit3,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -35,7 +37,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ adminUser }: AdminDashboardProps) {
-  const { users, records, markAttendance, calculateUserStats, getUpcomingLeaves, deleteAttendance } = useAttendance();
+  const { users, records, markAttendance, calculateUserStats, getUpcomingLeaves, deleteAttendance, isOfficialHoliday } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
 
@@ -43,6 +45,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
   const [selectedTargetUser, setSelectedTargetUser] = useState<User>(employees[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
+  const [isHolidayModalOpen, setIsHolidayModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [heatmapRange, setHeatmapRange] = useState<number>(20);
 
@@ -138,6 +141,16 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => setIsHolidayModalOpen(true)}
+                className="gap-1.5 border-amber-500/30 hover:bg-amber-500/10 text-amber-700 dark:text-amber-400 cursor-pointer"
+              >
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                <span>Official Holidays</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => {
                   setSelectedDay(null);
                   setIsModalOpen(true);
@@ -169,6 +182,18 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               </Button>
             </div>
           </div>
+
+          {/* Today's Official Holiday Banner (if declared) */}
+          {isOfficialHoliday(todayStr) && (
+            <div className="mt-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                <span className="font-semibold">Today is an Official Holiday: {isOfficialHoliday(todayStr)?.title}</span>
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">(Company-wide holiday for all employees)</span>
+              </div>
+              <Badge variant="amber" className="text-[10px]">Holiday Off</Badge>
+            </div>
+          )}
 
           {/* Metric Stats Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-border">
@@ -596,6 +621,12 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
         isOpen={isPreMarkOpen}
         onClose={() => setIsPreMarkOpen(false)}
         defaultUser={selectedTargetUser}
+      />
+
+      {/* Official Holidays Modal */}
+      <OfficialHolidaysModal
+        isOpen={isHolidayModalOpen}
+        onClose={() => setIsHolidayModalOpen(false)}
       />
     </div>
   );

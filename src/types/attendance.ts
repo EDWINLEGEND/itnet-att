@@ -24,6 +24,12 @@ export interface AttendanceRecord {
   updatedAt: string;
 }
 
+export interface OfficialHoliday {
+  id: string;
+  date: string; // YYYY-MM-DD
+  title: string;
+}
+
 export interface DayAttendance {
   date: string; // YYYY-MM-DD
   dateObj: Date;
@@ -32,6 +38,8 @@ export interface DayAttendance {
   isWorkDay: boolean; // Monday - Saturday
   isFuture: boolean;
   isToday: boolean;
+  isHoliday?: boolean;
+  holidayTitle?: string;
   record?: AttendanceRecord;
 }
 

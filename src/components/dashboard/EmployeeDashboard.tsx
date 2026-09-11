@@ -22,6 +22,7 @@ import {
   Calendar,
   History,
   Plane,
+  Sparkles,
 } from "lucide-react";
 
 interface EmployeeDashboardProps {
@@ -29,7 +30,7 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
-  const { records, markAttendance, getUpcomingLeaves, deleteAttendance } = useAttendance();
+  const { records, markAttendance, getUpcomingLeaves, deleteAttendance, isOfficialHoliday } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
@@ -41,6 +42,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const isSundayToday = dayOfWeek === 0;
 
   const todayRecord = records[`${user.id}_${todayStr}`];
+  const todayHoliday = isOfficialHoliday(todayStr);
 
   // User's upcoming planned leaves in the next 14 days
   const upcomingLeaves = useMemo(() => {
@@ -64,15 +66,19 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
       const dOfWeek = getDay(d);
       const isSun = dOfWeek === 0;
       const rec = records[`${user.id}_${dStr}`];
+      const holiday = isOfficialHoliday(dStr);
+      const isHoliday = !!holiday;
 
       list.push({
         date: dStr,
         dateObj: d,
         dayOfWeek: dOfWeek,
         isSunday: isSun,
-        isWorkDay: !isSun,
+        isWorkDay: !isSun && !isHoliday,
         isFuture: false,
         isToday: i === 0,
+        isHoliday,
+        holidayTitle: holiday?.title,
         record: rec,
       });
     }
@@ -153,7 +159,11 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               </p>
             </div>
 
-            {todayRecord ? (
+            {todayHoliday ? (
+              <Badge variant="amber" className="gap-1 text-xs py-1 px-2.5">
+                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Holiday: {todayHoliday.title}
+              </Badge>
+            ) : todayRecord ? (
               <Badge variant="emerald" className="gap-1 text-xs py-1 px-2.5">
                 <CheckCircle2 className="w-3.5 h-3.5" /> Logged: {SHIFT_CONFIGS[todayRecord.shiftType].label}
               </Badge>
@@ -421,6 +431,10 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                     {/* Visual Box Graphic */}
                     {day.isSunday ? (
                       <div className="w-5 h-5 rounded-[2px] border border-dashed border-zinc-400/50 dark:border-zinc-600/50 shrink-0" />
+                    ) : day.isHoliday ? (
+                      <div className="w-5 h-5 rounded-[2px] bg-amber-400 dark:bg-amber-500 border border-amber-600/30 flex items-center justify-center shrink-0 shadow-2xs" title={day.holidayTitle}>
+                        <Sparkles className="w-3 h-3 text-amber-950" />
+                      </div>
                     ) : isFull ? (
                       <div className="w-5 h-5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
                     ) : isMorning ? (
@@ -455,6 +469,8 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                       <div className="text-[11px] text-muted-foreground">
                         {day.isSunday
                           ? "Sunday Off"
+                          : day.isHoliday
+                          ? `Official Holiday: ${day.holidayTitle || "Holiday Off"}`
                           : day.record?.notes
                           ? day.record.notes
                           : hasRecord
@@ -468,6 +484,10 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                     {day.isSunday ? (
                       <Badge variant="outline" className="text-[10px] text-muted-foreground">
                         Off
+                      </Badge>
+                    ) : day.isHoliday ? (
+                      <Badge variant="amber" className="text-[10px] font-medium">
+                        Holiday Off
                       </Badge>
                     ) : hasRecord ? (
                       <Badge
