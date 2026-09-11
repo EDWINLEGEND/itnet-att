@@ -34,6 +34,10 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
     // Weekend / Sunday (Non-working day)
     cellClass +=
       "bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/60 dark:border-zinc-800/40 opacity-40 hover:opacity-100";
+  } else if (isFuture && shiftType === "leave") {
+    // Pre-marked Planned Leave in the future
+    cellClass +=
+      "bg-rose-500/10 border-2 border-dashed border-rose-400/90 dark:border-rose-500 hover:border-rose-600 dark:hover:border-rose-400";
   } else if (isFuture) {
     // Future scheduled day
     cellClass +=
@@ -105,6 +109,18 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
         <div className="space-y-0.5 text-zinc-300 text-[11px]">
           {isSunday ? (
             <span className="text-zinc-400">Sunday (Non-working day)</span>
+          ) : isFuture && shiftType === "leave" ? (
+            <div>
+              <div className="text-rose-400 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-rose-500 inline-block" />
+                <span>Planned Leave (Upcoming)</span>
+              </div>
+              {record?.notes && (
+                <div className="mt-1 text-zinc-300 text-[11px]">
+                  Reason: {record.notes}
+                </div>
+              )}
+            </div>
           ) : isFuture ? (
             <span className="text-zinc-500">Upcoming scheduled workday</span>
           ) : shiftConfig ? (

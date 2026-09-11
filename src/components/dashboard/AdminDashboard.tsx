@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { User, DayAttendance, ShiftType } from "@/types/attendance";
 import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
+import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
 import { useAttendance } from "@/lib/attendance-context";
 import { SHIFT_CONFIGS } from "@/lib/constants";
 import { format, startOfDay, getDay } from "date-fns";
@@ -26,6 +27,7 @@ import {
   TrendingUp,
   Calendar,
   Edit3,
+  Plane,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -33,13 +35,14 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ adminUser }: AdminDashboardProps) {
-  const { users, records, calculateUserStats } = useAttendance();
+  const { users, records, calculateUserStats, getUpcomingLeaves } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
 
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [selectedTargetUser, setSelectedTargetUser] = useState<User>(employees[0]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("all");
   const [heatmapRange, setHeatmapRange] = useState<number>(20);
 
@@ -112,6 +115,8 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
     return employees.filter((e) => e.id === activeTab);
   }, [activeTab, employees]);
 
+  const allUpcomingLeaves = useMemo(() => getUpcomingLeaves(14), [getUpcomingLeaves]);
+
   return (
     <div className="space-y-6">
       {/* Executive Header Card */}
@@ -133,15 +138,27 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               </p>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              className="gap-2 self-start sm:self-auto"
-            >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
-              <span>Export CSV Report</span>
-            </Button>
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsPreMarkOpen(true)}
+                className="gap-1.5"
+              >
+                <Plane className="w-4 h-4 text-rose-500" />
+                <span>Pre-Mark Leave</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                className="gap-2"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+                <span>Export CSV</span>
+              </Button>
+            </div>
           </div>
 
           {/* Metric Stats Cards */}
@@ -194,6 +211,36 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Team Upcoming Planned Leaves Banner */}
+      {allUpcomingLeaves.length > 0 && (
+        <div className="p-3.5 rounded-lg border border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Plane className="w-4 h-4 text-rose-500 shrink-0" />
+            <div>
+              <span className="font-semibold text-foreground">Upcoming Team Planned Leaves:</span>{" "}
+              <span className="text-muted-foreground">
+                {allUpcomingLeaves
+                  .map(
+                    (l) =>
+                      `${l.user.name} on ${format(l.dateObj, "EEE, MMM d")} (${
+                        l.record.notes ? l.record.notes.replace("Planned Leave: ", "") : "Leave"
+                      })`
+                  )
+                  .join("; ")}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsPreMarkOpen(true)}
+            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto"
+          >
+            + Pre-Mark Leave
+          </Button>
+        </div>
+      )}
 
       {/* Team Roster Table */}
       <Card className="border-border">
@@ -400,6 +447,13 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
         onClose={() => setIsModalOpen(false)}
         day={selectedDay}
         targetUser={selectedTargetUser}
+      />
+
+      {/* Pre-Mark Planned Leave Modal */}
+      <PreMarkLeaveModal
+        isOpen={isPreMarkOpen}
+        onClose={() => setIsPreMarkOpen(false)}
+        defaultUser={selectedTargetUser}
       />
     </div>
   );

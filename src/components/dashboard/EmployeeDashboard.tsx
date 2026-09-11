@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import { User, DayAttendance, ShiftType } from "@/types/attendance";
 import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
+import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
 import { useAttendance } from "@/lib/attendance-context";
 import { SHIFT_CONFIGS } from "@/lib/constants";
 import {
@@ -28,6 +29,8 @@ import {
   Clock,
   Calendar,
   History,
+  Plane,
+  Plus,
 } from "lucide-react";
 
 interface EmployeeDashboardProps {
@@ -35,9 +38,10 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
-  const { records, markAttendance } = useAttendance();
+  const { records, markAttendance, getUpcomingLeaves } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
   const [tableFilter, setTableFilter] = useState<string>("all");
 
   const today = useMemo(() => startOfDay(new Date()), []);
@@ -46,6 +50,11 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const isSundayToday = dayOfWeek === 0;
 
   const todayRecord = records[`${user.id}_${todayStr}`];
+
+  // User's upcoming planned leaves in the next 14 days
+  const upcomingLeaves = useMemo(() => {
+    return getUpcomingLeaves(14).filter((l) => l.user.id === user.id);
+  }, [getUpcomingLeaves, user.id]);
 
   const handleQuickMarkToday = (shiftType: ShiftType) => {
     markAttendance(user.id, todayStr, shiftType);
@@ -117,6 +126,18 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                   {format(today, "EEEE, MMMM d, yyyy")} &bull; Schedule:{" "}
                   <span className="font-medium text-foreground">Mon&ndash;Sat, 10:00 &ndash; 18:00</span>
                 </span>
+              </div>
+
+              <div className="flex items-center gap-2 pt-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsPreMarkOpen(true)}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <Plane className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Pre-Mark Planned Leave</span>
+                </Button>
               </div>
             </div>
 
@@ -223,6 +244,36 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Upcoming Planned Leaves Alert if any */}
+      {upcomingLeaves.length > 0 && (
+        <div className="p-3.5 rounded-lg border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <Plane className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+            <div>
+              <span className="font-semibold text-foreground">Upcoming Pre-Marked Leave:</span>{" "}
+              <span className="text-muted-foreground">
+                {upcomingLeaves
+                  .map(
+                    (l) =>
+                      `${format(l.dateObj, "EEE, MMM d")} (${
+                        l.record.notes ? l.record.notes.replace("Planned Leave: ", "") : "Leave"
+                      })`
+                  )
+                  .join("; ")}
+              </span>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsPreMarkOpen(true)}
+            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto"
+          >
+            Plan More / Edit
+          </Button>
+        </div>
+      )}
 
       {/* Primary GitHub Commits Heatmap */}
       <AttendanceHeatmap
@@ -388,6 +439,13 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         onClose={() => setIsModalOpen(false)}
         day={selectedDay}
         targetUser={user}
+      />
+
+      {/* Pre-Mark Planned Leave Modal */}
+      <PreMarkLeaveModal
+        isOpen={isPreMarkOpen}
+        onClose={() => setIsPreMarkOpen(false)}
+        defaultUser={user}
       />
     </div>
   );

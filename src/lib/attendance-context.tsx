@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { User, AttendanceRecord, ShiftType, UserAttendanceStats } from "@/types/attendance";
 import { USERS } from "./constants";
 import { loadStoredRecords, saveStoredRecords, clearStoredRecords } from "./mock-data";
-import { format, subDays, getDay, isAfter, startOfDay } from "date-fns";
+import { format, subDays, addDays, getDay, isAfter, isBefore, startOfDay, parseISO } from "date-fns";
 
 interface AttendanceContextType {
   currentUser: User | null;
@@ -14,8 +14,10 @@ interface AttendanceContextType {
   quickLogin: (userId: string) => void;
   logout: () => void;
   markAttendance: (userId: string, date: string, shiftType: ShiftType, notes?: string) => void;
+  preMarkLeave: (userId: string, startDate: string, endDate?: string, reason?: string) => void;
   deleteAttendance: (userId: string, date: string) => void;
   getRecord: (userId: string, date: string) => AttendanceRecord | undefined;
+  getUpcomingLeaves: (daysAhead?: number) => { record: AttendanceRecord; user: User; dateObj: Date }[];
   calculateUserStats: (userId: string, daysBack?: number) => UserAttendanceStats;
   resetDemoData: () => void;
   isLoaded: boolean;
@@ -118,6 +120,38 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     []
   );
 
+  const preMarkLeave = useCallback(
+    (userId: string, startDate: string, endDate?: string, reason?: string) => {
+      setRecords((prev) => {
+        const next = { ...prev };
+        const start = parseISO(startDate);
+        const end = endDate ? parseISO(endDate) : start;
+        const noteText = reason?.trim() ? `Planned Leave: ${reason.trim()}` : "Planned Leave";
+
+        let cur = start;
+        while (!isAfter(cur, end)) {
+          if (getDay(cur) !== 0) {
+            const dateStr = format(cur, "yyyy-MM-dd");
+            const key = `${userId}_${dateStr}`;
+            next[key] = {
+              id: prev[key]?.id || `rec-${userId}-${dateStr}`,
+              userId,
+              date: dateStr,
+              shiftType: "leave",
+              notes: noteText,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+          cur = addDays(cur, 1);
+        }
+
+        saveStoredRecords(next);
+        return next;
+      });
+    },
+    []
+  );
+
   const deleteAttendance = useCallback((userId: string, date: string) => {
     setRecords((prev) => {
       const key = `${userId}_${date}`;
@@ -131,6 +165,33 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
   const getRecord = useCallback(
     (userId: string, date: string): AttendanceRecord | undefined => {
       return records[`${userId}_${date}`];
+    },
+    [records]
+  );
+
+  const getUpcomingLeaves = useCallback(
+    (daysAhead = 14) => {
+      const today = startOfDay(new Date());
+      const maxDate = addDays(today, daysAhead);
+      const results: { record: AttendanceRecord; user: User; dateObj: Date }[] = [];
+
+      Object.values(records).forEach((rec) => {
+        if (rec.shiftType === "leave") {
+          const recDate = parseISO(rec.date);
+          if (!isBefore(recDate, today) && !isAfter(recDate, maxDate)) {
+            const u = USERS.find((user) => user.id === rec.userId);
+            if (u) {
+              results.push({
+                record: rec,
+                user: u,
+                dateObj: recDate,
+              });
+            }
+          }
+        }
+      });
+
+      return results.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
     },
     [records]
   );
@@ -223,8 +284,10 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         quickLogin,
         logout,
         markAttendance,
+        preMarkLeave,
         deleteAttendance,
         getRecord,
+        getUpcomingLeaves,
         calculateUserStats,
         resetDemoData,
         isLoaded,

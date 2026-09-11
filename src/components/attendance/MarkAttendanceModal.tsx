@@ -62,7 +62,7 @@ export function MarkAttendanceModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-6">
+      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-xl">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <DialogTitle className="text-base font-semibold">

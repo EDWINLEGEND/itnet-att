@@ -50,15 +50,18 @@ The system comes pre-configured with 5 user accounts: **1 Admin** and **4 Employ
   - `Morning Half (10-2)`
   - `Afternoon Half (2-6)`
   - `On Leave (0h)`
+- **Pre-Mark Planned Leaves**: Easily notify the team and manager of upcoming leaves (tomorrow, next week, or multi-day range) with 1-tap preset reasons (`Casual`, `Medical`, `Family Event`, `Vacation`).
+- **Upcoming Leaves Banner**: Shows pre-marked leaves at a glance so employees and managers stay aligned.
 - **Personal Attendance Metrics**: Real-time attendance rate %, full shifts count, half-shift breakdown, and total hours worked.
 - **Recent 30-Day History Table**: Filterable by Full, Half, or Leave, with notes and edit options.
 
 ### 3. Admin Control Center
 - **Executive Overview**: Average company attendance rate %, present count, half-shift count, and on-leave count.
+- **Upcoming Team Leaves Banner**: Highlights upcoming absences across all team members in the next 14 days.
 - **Team Roster & 90-Day Analytics**: Summary table of Shan, Edwin, Able, and Devdath with attendance percentages and hours.
 - **Segmented Contribution Grids**: View all 4 heatmaps stacked or switch between individual tabs to eliminate clutter.
 - **CSV Report Export**: 1-click download of company attendance reports in `.csv` format.
-- **Attendance Override**: Admin can select any past or future date to log or adjust shifts on behalf of any team member.
+- **Attendance Override & Pre-Marking**: Admin can select any past or future date to log, pre-mark, or adjust shifts on behalf of any team member.
 
 ### 4. Enterprise Design System (shadcn/ui)
 - Built on accessible Radix UI primitives (`Dialog`, `DropdownMenu`, `Tabs`, `Tooltip`, `Avatar`, `Table`).
@@ -74,6 +77,7 @@ The system comes pre-configured with 5 user accounts: **1 Admin** and **4 Employ
 - **Language**: TypeScript
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
 - **UI Primitives**: [shadcn/ui](https://ui.shadcn.com/) & [Radix UI](https://www.radix-ui.com/)
+- **Smooth Scrolling**: [Lenis](https://github.com/darkroomengineering/lenis) (Momentum smooth scroll)
 - **Icons**: [Lucide React](https://lucide.dev/)
 - **Date Utilities**: [date-fns](https://date-fns.org/)
 - **State & Persistence**: React Context API with `localStorage` persistence and 1-click demo data reset.

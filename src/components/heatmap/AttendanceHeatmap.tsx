@@ -48,7 +48,10 @@ export function AttendanceHeatmap({
 
   const { weeks, monthHeaders } = useMemo(() => {
     const today = startOfDay(new Date());
-    const startDate = startOfWeek(subWeeks(today, selectedRange - 1), { weekStartsOn: 1 });
+    // Display past weeks plus 2 weeks into the future for pre-marked planned leaves
+    const futureWeeksCount = 2;
+    const pastWeeksCount = Math.max(8, selectedRange - futureWeeksCount);
+    const startDate = startOfWeek(subWeeks(today, pastWeeksCount - 1), { weekStartsOn: 1 });
 
     const weeksList: DayAttendance[][] = [];
     const months: { label: string; colIndex: number }[] = [];
@@ -279,6 +282,12 @@ export function AttendanceHeatmap({
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-[2px] border border-zinc-300 dark:border-zinc-700 bg-transparent" />
                   <span>Leave</span>
+                </div>
+
+                {/* Pre-marked Planned Leave */}
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 rounded-[2px] bg-rose-500/10 border border-dashed border-rose-400" />
+                  <span>Planned</span>
                 </div>
 
                 {/* Left Fill (Morning) */}
