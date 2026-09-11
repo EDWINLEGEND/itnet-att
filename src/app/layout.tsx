@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ITNET Attendance Tracker | GitHub Commits Heatmap",
-  description: "Employee attendance tracking with GitHub commits style contribution heatmaps for Monday-Saturday shifts",
+  title: "ITNETAI Attendance Tracker | GitHub Commits Heatmap",
+  description: "ITNETAI employee attendance tracking with GitHub commits style contribution heatmaps for Monday-Saturday shifts",
 };
 
 import { SmoothScroll } from "@/components/providers/SmoothScroll";

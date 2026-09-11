@@ -4,7 +4,7 @@ export const USERS: User[] = [
   {
     id: "admin-1",
     name: "Admin",
-    email: "admin@itnet.com",
+    email: "admin@itnetai.com",
     password: "admin123",
     role: "admin",
     designation: "Operations & HR Admin",
@@ -14,7 +14,7 @@ export const USERS: User[] = [
   {
     id: "emp-shan",
     name: "Shan",
-    email: "shan@itnet.com",
+    email: "shan@itnetai.com",
     password: "shan123",
     role: "employee",
     designation: "Senior Software Engineer",
@@ -24,7 +24,7 @@ export const USERS: User[] = [
   {
     id: "emp-edwin",
     name: "Edwin",
-    email: "edwin@itnet.com",
+    email: "edwin@itnetai.com",
     password: "edwin123",
     role: "employee",
     designation: "Full Stack Developer",
@@ -34,7 +34,7 @@ export const USERS: User[] = [
   {
     id: "emp-able",
     name: "Able",
-    email: "able@itnet.com",
+    email: "able@itnetai.com",
     password: "able123",
     role: "employee",
     designation: "Backend & Systems Lead",
@@ -44,7 +44,7 @@ export const USERS: User[] = [
   {
     id: "emp-devdath",
     name: "Devdath",
-    email: "devdath@itnet.com",
+    email: "devdath@itnetai.com",
     password: "devdath123",
     role: "employee",
     designation: "UI/UX & Frontend Engineer",

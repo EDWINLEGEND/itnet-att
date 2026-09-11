@@ -35,7 +35,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ adminUser }: AdminDashboardProps) {
-  const { users, records, calculateUserStats, getUpcomingLeaves, deleteAttendance } = useAttendance();
+  const { users, records, markAttendance, calculateUserStats, getUpcomingLeaves, deleteAttendance } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
 
@@ -104,7 +104,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `ITNET_Attendance_Report_${format(today, "yyyy-MM-dd")}.csv`);
+    link.setAttribute("download", `ITNETAI_Attendance_Report_${format(today, "yyyy-MM-dd")}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -217,6 +217,107 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               </div>
               <div className="text-[10px] text-muted-foreground mt-0.5">0h scheduled</div>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Today's Team Attendance (1-Tap Quick Action List) */}
+      <Card className="border-border shadow-xs">
+        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <CardTitle className="text-sm sm:text-base font-semibold">
+                Today&apos;s Team Attendance &mdash; 1-Tap Quick Action
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Tap any option to update attendance for today instantly
+              </p>
+            </div>
+            <Badge variant="outline" className="text-xs font-mono">
+              {format(today, "EEE, MMM d")}
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-2 sm:p-3">
+          <div className="divide-y divide-border/60">
+            {employees.map((emp) => {
+              const rec = records[`${emp.id}_${todayStr}`];
+              const shift = rec?.shiftType;
+
+              return (
+                <div
+                  key={emp.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 rounded-lg hover:bg-muted/30 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="h-9 w-9 border border-border shrink-0">
+                      <AvatarFallback className="text-xs font-bold bg-muted text-foreground">
+                        {emp.initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <div className="font-semibold text-sm text-foreground flex items-center gap-2">
+                        <span>{emp.name}</span>
+                        {shift ? (
+                          <Badge
+                            variant={shift === "leave" ? "destructive" : "emerald"}
+                            className="text-[10px] font-mono py-0"
+                          >
+                            {SHIFT_CONFIGS[shift].label}
+                          </Badge>
+                        ) : (
+                          <Badge variant="amber" className="text-[10px] font-mono py-0">
+                            Pending
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        {emp.designation}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4 Quick 1-Tap Buttons for Admin */}
+                  <div className="grid grid-cols-4 gap-1 sm:gap-1.5 self-stretch sm:self-auto">
+                    <Button
+                      variant={shift === "full" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => markAttendance(emp.id, todayStr, "full")}
+                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                    >
+                      Full
+                    </Button>
+                    <Button
+                      variant={shift === "half_morning" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => markAttendance(emp.id, todayStr, "half_morning")}
+                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                    >
+                      <span className="hidden xs:inline">Morning</span>
+                      <span className="xs:hidden">Morn</span>
+                    </Button>
+                    <Button
+                      variant={shift === "half_afternoon" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => markAttendance(emp.id, todayStr, "half_afternoon")}
+                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                    >
+                      <span className="hidden xs:inline">Afternoon</span>
+                      <span className="xs:hidden">Aft</span>
+                    </Button>
+                    <Button
+                      variant={shift === "leave" ? "destructive" : "outline"}
+                      size="sm"
+                      onClick={() => markAttendance(emp.id, todayStr, "leave")}
+                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                    >
+                      Leave
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -262,7 +262,7 @@ function MarkAttendanceContent({
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <div>
-                <span className="font-semibold">Sunday Note:</span> Non-working weekend day for ITNET (Mon&ndash;Sat schedule).
+                <span className="font-semibold">Sunday Note:</span> Non-working weekend day for ITNETAI (Mon&ndash;Sat schedule).
               </div>
             </div>
           )}

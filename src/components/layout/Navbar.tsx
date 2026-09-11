@@ -40,7 +40,7 @@ export function Navbar() {
             <CalendarDays className="w-4 h-4" />
           </div>
           <span className="font-bold text-foreground tracking-tight text-sm">
-            ITNET
+            ITNETAI
           </span>
         </div>
 
@@ -53,7 +53,7 @@ export function Navbar() {
                   {currentUser.initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-foreground font-semibold">{currentUser.name}</span>
+              <span className="text-foreground font-semibold truncate max-w-[65px] sm:max-w-[120px]">{currentUser.name}</span>
             </div>
           )}
 
