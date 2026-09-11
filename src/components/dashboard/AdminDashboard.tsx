@@ -283,9 +283,6 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                     <div>
                       <div className="font-semibold text-sm text-foreground flex items-center gap-2">
                         <span>{emp.name}</span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${empTheme.badge}`}>
-                          {empTheme.name}
-                        </span>
                         {shift ? (
                           <Badge
                             variant={shift === "leave" ? "destructive" : "emerald"}
@@ -586,17 +583,25 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
             >
               All (4 Members)
             </Button>
-            {employees.map((emp) => (
-              <Button
-                key={emp.id}
-                variant={activeTab === emp.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setActiveTab(emp.id)}
-                className={`h-7 text-xs rounded-lg shadow-none ${activeTab === emp.id ? "bg-background text-foreground shadow-2xs font-semibold" : ""}`}
-              >
-                {emp.name}
-              </Button>
-            ))}
+            {employees.map((emp) => {
+              const empTheme = emp.theme || USER_THEMES[emp.id];
+              const isSelected = activeTab === emp.id;
+              return (
+                <Button
+                  key={emp.id}
+                  variant={isSelected ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setActiveTab(emp.id)}
+                  className={`h-7 text-xs rounded-lg shadow-none transition-colors ${
+                    isSelected
+                      ? empTheme?.activeTab || "bg-background text-foreground shadow-2xs font-semibold"
+                      : ""
+                  }`}
+                >
+                  {emp.name}
+                </Button>
+              );
+            })}
           </div>
         </div>
 

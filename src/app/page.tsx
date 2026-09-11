@@ -26,10 +26,10 @@ function MainContent() {
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors relative">
       <Navbar />
 
-      <main className={`flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 ${
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 ${
         !currentUser
           ? "flex items-center justify-center min-h-[calc(100dvh-3.5rem)] py-2"
-          : "py-6 pb-28 sm:pb-32"
+          : "py-4 sm:py-6 pb-28 sm:pb-32"
       }`}>
         {!currentUser ? (
           <LoginPage />

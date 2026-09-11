@@ -130,29 +130,24 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Top Ambient Pastel Header */}
-      <div className={`-mx-4 sm:-mx-6 -mt-6 mb-2 p-5 sm:p-6 rounded-b-3xl bg-gradient-to-b ${theme.pastelWash} to-transparent`}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-2xl ${theme.avatarBg} flex items-center justify-center font-bold text-lg shadow-xs`}>
+      {/* Top Ambient Pastel Header Card */}
+      <div className={`p-4 sm:p-6 rounded-3xl ${theme.headerBg} shadow-xs mb-4 transition-colors`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-2xl ${theme.avatarBg} flex items-center justify-center font-black text-lg sm:text-xl shadow-xs shrink-0`}>
               {user.name[0]}
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  {user.name}
-                </h1>
-                <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${theme.badge}`}>
-                  {theme.name}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-0.5">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl font-black tracking-tight truncate">
+                {user.name}
+              </h1>
+              <p className="text-xs font-medium opacity-80 mt-0.5">
                 {format(today, "EEEE, MMMM d, yyyy")}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant="ghost"
               size="sm"
@@ -160,9 +155,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 setSelectedDay(null);
                 setIsModalOpen(true);
               }}
-              className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-background/90 shadow-2xs hover:bg-background"
+              className="flex-1 sm:flex-none h-8 px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-white/80 dark:bg-black/40 shadow-2xs hover:bg-white dark:hover:bg-black/60 font-semibold"
             >
-              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+              <Calendar className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
               <span>Past Day</span>
             </Button>
 
@@ -170,9 +165,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               variant="ghost"
               size="sm"
               onClick={() => setIsPreMarkOpen(true)}
-              className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-background/90 shadow-2xs hover:bg-background"
+              className="flex-1 sm:flex-none h-8 px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-white/80 dark:bg-black/40 shadow-2xs hover:bg-white dark:hover:bg-black/60 font-semibold"
             >
-              <Plane className="w-3.5 h-3.5 text-rose-500" />
+              <Plane className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>Leave</span>
             </Button>
           </div>
@@ -219,12 +214,12 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
           </div>
 
           {/* 4 Shift Choice Cards - Borderless & Elevated */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             {/* Full Day */}
             <button
               type="button"
               onClick={() => handleChooseShift("full")}
-              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
+              className={`p-2.5 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-2.5 sm:gap-3 shadow-2xs ${
                 selectedTodayShift === "full"
                   ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
                   : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
@@ -242,7 +237,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <div className="font-semibold text-xs sm:text-sm text-foreground">
                   Full Day
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 18:00
                 </div>
               </div>
@@ -252,7 +247,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_morning")}
-              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
+              className={`p-2.5 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-2.5 sm:gap-3 shadow-2xs ${
                 selectedTodayShift === "half_morning"
                   ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
                   : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
@@ -272,7 +267,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <div className="font-semibold text-xs sm:text-sm text-foreground">
                   Morning
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 14:00
                 </div>
               </div>
@@ -282,7 +277,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_afternoon")}
-              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
+              className={`p-2.5 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-2.5 sm:gap-3 shadow-2xs ${
                 selectedTodayShift === "half_afternoon"
                   ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
                   : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
@@ -302,7 +297,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <div className="font-semibold text-xs sm:text-sm text-foreground">
                   Afternoon
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                   14:00 &ndash; 18:00
                 </div>
               </div>
@@ -312,7 +307,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("leave")}
-              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
+              className={`p-2.5 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-2.5 sm:gap-3 shadow-2xs ${
                 selectedTodayShift === "leave"
                   ? "bg-rose-500/15 dark:bg-rose-950/40 ring-2 ring-rose-500 shadow-sm"
                   : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
@@ -330,7 +325,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <div className="font-semibold text-xs sm:text-sm text-foreground">
                   Leave
                 </div>
-                <div className="text-[11px] text-muted-foreground mt-0.5">
+                <div className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5">
                   Off Duty
                 </div>
               </div>

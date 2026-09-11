@@ -41,9 +41,9 @@ export function BottomNav() {
     <TooltipProvider delayDuration={150}>
       <nav
         aria-label="Attendance navigation dock"
-        className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 select-none"
+        className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 select-none max-w-[calc(100vw-1rem)]"
       >
-        <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-full border border-border/80 bg-background/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-lg shadow-black/5 dark:shadow-black/40">
+        <div className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-full bg-background/90 dark:bg-zinc-900/90 backdrop-blur-md shadow-lg shadow-black/5 dark:shadow-black/40">
           {navItems.map((item) => {
             const isSelected = currentUser?.id === item.id;
             const todayRec = records[`${item.id}_${todayStr}`];
@@ -57,10 +57,10 @@ export function BottomNav() {
                     <button
                       type="button"
                       onClick={() => quickLogin(item.id)}
-                      className={`relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-full transition-all duration-200 cursor-pointer ${
+                      className={`relative flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full transition-all duration-200 cursor-pointer ${
                         isSelected
-                          ? "bg-purple-600 text-white shadow-md shadow-purple-500/30 scale-105 ring-2 ring-purple-400"
-                          : "bg-purple-500/10 text-purple-600 dark:text-purple-400 hover:bg-purple-500/20 border border-purple-500/30 hover:scale-105"
+                          ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/30 scale-105 ring-2 ring-emerald-400"
+                          : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/25 hover:scale-105"
                       }`}
                       aria-label="Admin View"
                     >

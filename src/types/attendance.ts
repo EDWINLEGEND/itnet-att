@@ -6,11 +6,13 @@ export interface UserTheme {
   name: string;
   pastelBg: string;
   pastelWash: string;
+  headerBg: string;
   badge: string;
   avatarBg: string;
   accentText: string;
   cardTint: string;
   indicatorBg: string;
+  activeTab: string;
 }
 
 export interface User {
