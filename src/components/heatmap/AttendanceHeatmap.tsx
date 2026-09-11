@@ -106,15 +106,9 @@ export function AttendanceHeatmap({
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold text-sm sm:text-base text-foreground tracking-tight">
-                    {user.name} &mdash; Attendance Activity
+                    {user.name} &mdash; Activity
                   </h3>
-                  <Badge variant="outline" className="text-[11px] font-normal text-muted-foreground">
-                    Mon&ndash;Sat &bull; 10:00 &ndash; 18:00
-                  </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  GitHub-style contribution grid &bull; Left fill (10&ndash;2), Right fill (2&ndash;6), Full fill (10&ndash;6)
-                </p>
               </div>
 
               {/* Range Toggle */}
@@ -293,25 +287,25 @@ export function AttendanceHeatmap({
                 {/* Left Fill (Morning) */}
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex">
-                    <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
+                    <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                   </div>
-                  <span>Morning (10-2)</span>
+                  <span>Morning</span>
                 </div>
 
                 {/* Right Fill (Afternoon) */}
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex">
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
-                    <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+                    <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                   </div>
-                  <span>Afternoon (2-6)</span>
+                  <span>Afternoon</span>
                 </div>
 
                 {/* Full Day */}
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10 dark:border-white/10" />
-                  <span className="font-medium text-foreground">Full Day (10-6)</span>
+                  <div className="w-3 h-3 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 dark:border-white/10" />
+                  <span className="font-medium text-foreground">Full Day</span>
                 </div>
 
                 <span className="text-muted-foreground">More</span>

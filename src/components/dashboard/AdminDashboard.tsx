@@ -35,7 +35,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ adminUser }: AdminDashboardProps) {
-  const { users, records, calculateUserStats, getUpcomingLeaves } = useAttendance();
+  const { users, records, calculateUserStats, getUpcomingLeaves, deleteAttendance } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
 
@@ -126,16 +126,12 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <Badge variant="purple" className="gap-1 font-mono text-[10px]">
-                  <ShieldCheck className="w-3 h-3" /> Admin Dashboard
+                  <ShieldCheck className="w-3 h-3" /> Admin
                 </Badge>
-                <span className="text-xs text-muted-foreground">Company Administration</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
                 Attendance Management
               </h1>
-              <p className="text-xs text-muted-foreground">
-                Monitoring 4 team members: Shan, Edwin, Able, Devdath &bull; Mon&ndash;Sat (10:00 &ndash; 18:00)
-              </p>
             </div>
 
             <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
@@ -177,18 +173,18 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
             <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Full Day</span>
-                <span className="w-2 h-2 rounded-[1.5px] bg-[#216e39] dark:bg-[#39d353]" />
+                <span className="w-2 h-2 rounded-[1.5px] bg-[#2da44e] dark:bg-[#3fb950]" />
               </div>
               <div className="text-2xl font-bold font-mono text-foreground mt-1">
                 {todayOverview.full} / {todayOverview.total}
               </div>
-              <div className="text-[10px] text-muted-foreground mt-0.5">10:00 &ndash; 18:00 (8h)</div>
+              <div className="text-[10px] text-muted-foreground mt-0.5">8h &bull; Standard shift</div>
             </div>
 
             <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Half Shifts</span>
-                <span className="w-2 h-2 rounded-[1.5px] bg-[#30a14e] dark:bg-[#26a641]" />
+                <span className="w-2 h-2 rounded-[1.5px] bg-[#2da44e] dark:bg-[#3fb950]" />
               </div>
               <div className="text-2xl font-bold font-mono text-foreground mt-1">
                 {todayOverview.morning + todayOverview.afternoon}
@@ -215,27 +211,62 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
       {/* Team Upcoming Planned Leaves Banner */}
       {allUpcomingLeaves.length > 0 && (
         <div className="p-3.5 rounded-lg border border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <Plane className="w-4 h-4 text-rose-500 shrink-0" />
-            <div>
-              <span className="font-semibold text-foreground">Upcoming Team Planned Leaves:</span>{" "}
-              <span className="text-muted-foreground">
-                {allUpcomingLeaves
-                  .map(
-                    (l) =>
-                      `${l.user.name} on ${format(l.dateObj, "EEE, MMM d")} (${
-                        l.record.notes ? l.record.notes.replace("Planned Leave: ", "") : "Leave"
-                      })`
-                  )
-                  .join("; ")}
-              </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Plane className="w-4 h-4 text-rose-500 shrink-0" />
+              <span className="font-semibold text-foreground">Upcoming Planned Leaves:</span>
+              <span className="text-[11px] text-muted-foreground">(Click to change or cancel)</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {allUpcomingLeaves.map((l) => (
+                <span
+                  key={l.record.id}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-border text-foreground text-xs shadow-2xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCellClick(l.user, {
+                        date: l.record.date,
+                        dateObj: l.dateObj,
+                        dayOfWeek: getDay(l.dateObj),
+                        isSunday: false,
+                        isWorkDay: true,
+                        isFuture: true,
+                        isToday: false,
+                        record: l.record,
+                      });
+                    }}
+                    className="font-medium hover:underline cursor-pointer flex items-center gap-1"
+                    title="Click to edit shift or change leave"
+                  >
+                    <span className="font-semibold">{l.user.name}</span>
+                    <span>&bull; {format(l.dateObj, "EEE, MMM d")}</span>
+                    <span className="text-muted-foreground">
+                      ({l.record.notes?.replace("Planned Leave: ", "") || "Leave"})
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Cancel ${l.user.name}'s planned leave on ${format(l.dateObj, "MMM d")}?`)) {
+                        deleteAttendance(l.user.id, l.record.date);
+                      }
+                    }}
+                    className="text-muted-foreground hover:text-rose-600 p-0.5 rounded cursor-pointer transition-colors"
+                    title="Cancel leave"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsPreMarkOpen(true)}
-            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto"
+            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto shrink-0"
           >
             + Pre-Mark Leave
           </Button>
@@ -295,18 +326,18 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                       {config ? (
                         <div className="flex items-center gap-2">
                           {config.type === "full" && (
-                            <div className="w-3.5 h-3.5 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10" />
+                            <div className="w-3.5 h-3.5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10" />
                           )}
                           {config.type === "half_morning" && (
                             <div className="w-3.5 h-3.5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden flex">
-                              <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-                              <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
+                              <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                              <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                             </div>
                           )}
                           {config.type === "half_afternoon" && (
                             <div className="w-3.5 h-3.5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden flex">
-                              <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
-                              <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+                              <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+                              <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                             </div>
                           )}
                           {config.type === "leave" && (
@@ -395,11 +426,8 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
           <div>
             <h2 className="text-base font-bold text-foreground flex items-center gap-2">
               <Calendar className="w-4 h-4 text-emerald-600" />
-              <span>Employee Contribution Grids</span>
+              <span>Employee Grids</span>
             </h2>
-            <p className="text-xs text-muted-foreground">
-              Side-by-side GitHub commit matrices &bull; Click any box to log or correct attendance
-            </p>
           </div>
 
           <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg text-xs self-start sm:self-auto overflow-x-auto max-w-full">

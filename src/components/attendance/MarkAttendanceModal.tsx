@@ -78,11 +78,17 @@ export function MarkAttendanceModal({
         </DialogHeader>
 
         <div className="space-y-4 py-2">
+          {day.isFuture && day.record?.shiftType === "leave" && (
+            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300">
+              <span className="font-semibold">Pre-Marked Leave:</span> You can switch this to a Full/Half shift or click Delete below to cancel.
+            </div>
+          )}
+
           {day.isSunday && (
             <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <div>
-                <span className="font-semibold">Sunday Note:</span> Non-working weekend day for ITNET (Mon&ndash;Sat schedule).
+                <span className="font-semibold">Sunday Note:</span> Non-working weekend day for ITNET.
               </div>
             </div>
           )}
@@ -104,7 +110,7 @@ export function MarkAttendanceModal({
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10 shrink-0" />
+                  <div className="w-5 h-5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Full Shift
@@ -132,8 +138,8 @@ export function MarkAttendanceModal({
               >
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
-                    <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
+                    <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -162,8 +168,8 @@ export function MarkAttendanceModal({
               >
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
-                    <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+                    <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
@@ -192,19 +198,19 @@ export function MarkAttendanceModal({
               >
                 <div className="flex items-center gap-3">
                   <div className="w-5 h-5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
-                  <div>
+                  <div className="min-w-0">
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Leave / Absent
                       <Badge variant="destructive" className="text-[10px] py-0 font-mono">
                         0h
                       </Badge>
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-muted-foreground truncate">
                       Not scheduled / Off duty (Hollow box)
                     </div>
                   </div>
                 </div>
-                {selectedShift === "leave" && <Check className="w-4 h-4 text-rose-500" />}
+                {selectedShift === "leave" && <Check className="w-4 h-4 text-rose-500 shrink-0" />}
               </button>
             </div>
           </div>
@@ -217,28 +223,28 @@ export function MarkAttendanceModal({
               type="text"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g. Remote work, dentist appointment, approved casual leave"
+              placeholder="e.g. Remote work, doctor appointment, approved leave"
               className="w-full px-3 py-2 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
           </div>
         </div>
 
-        <DialogFooter className="flex items-center justify-between sm:justify-between pt-2 border-t border-border">
+        <DialogFooter className="flex flex-row items-center justify-between pt-3 border-t border-border gap-2">
           <div>
             {day.record && canEdit && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleDelete}
-                className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1"
+                className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 px-2 sm:px-3"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Delete</span>
+                <span className="hidden sm:inline">Delete</span>
               </Button>
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button variant="outline" size="sm" onClick={onClose} className="px-2.5 sm:px-3">
               Cancel
             </Button>
             <Button
@@ -246,6 +252,7 @@ export function MarkAttendanceModal({
               size="sm"
               onClick={handleSave}
               disabled={!canEdit}
+              className="px-3"
             >
               Save Record
             </Button>

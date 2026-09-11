@@ -47,27 +47,27 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
     cellClass +=
       "bg-transparent border border-zinc-300 dark:border-zinc-700/80 hover:border-zinc-400 dark:hover:border-zinc-500";
   } else if (shiftType === "full") {
-    // Full day: Solid green fill
+    // Full day: Solid vibrant green fill
     cellClass +=
-      "bg-[#216e39] dark:bg-[#39d353] border border-black/10 dark:border-white/10 hover:brightness-110";
+      "bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 dark:border-white/10 hover:brightness-110";
   } else if (shiftType === "half_morning") {
-    // Morning half: Left half filled (10:00 AM - 2:00 PM)
+    // Morning half: Left half filled with identical vibrant green
     cellClass +=
       "border border-zinc-300 dark:border-zinc-700 overflow-hidden hover:brightness-110";
     cellInner = (
       <div className="absolute inset-0 flex">
-        <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
+        <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
       </div>
     );
   } else if (shiftType === "half_afternoon") {
-    // Afternoon half: Right half filled (2:00 PM - 6:00 PM)
+    // Afternoon half: Right half filled with identical vibrant green
     cellClass +=
       "border border-zinc-300 dark:border-zinc-700 overflow-hidden hover:brightness-110";
     cellInner = (
       <div className="absolute inset-0 flex">
-        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-900" />
-        <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+        <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
       </div>
     );
   }

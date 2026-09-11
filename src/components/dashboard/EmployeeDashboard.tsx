@@ -38,7 +38,7 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
-  const { records, markAttendance, getUpcomingLeaves } = useAttendance();
+  const { records, markAttendance, getUpcomingLeaves, deleteAttendance } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
@@ -110,25 +110,20 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             {/* Employee Profile Information */}
             <div className="lg:col-span-7 space-y-2">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="font-normal text-muted-foreground">
-                  Employee Dashboard
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                  {user.name}
+                </h1>
+                <Badge variant="outline" className="font-normal text-muted-foreground text-xs">
+                  {user.designation}
                 </Badge>
-                <span className="text-xs text-muted-foreground">{user.designation}</span>
               </div>
-
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-                {user.name}
-              </h1>
 
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>
-                  {format(today, "EEEE, MMMM d, yyyy")} &bull; Schedule:{" "}
-                  <span className="font-medium text-foreground">Mon&ndash;Sat, 10:00 &ndash; 18:00</span>
-                </span>
+                <span>{format(today, "EEEE, MMMM d, yyyy")}</span>
               </div>
 
-              <div className="flex items-center gap-2 pt-2 flex-wrap">
+              <div className="flex items-center gap-2 pt-1 flex-wrap">
                 <Button
                   variant="outline"
                   size="sm"
@@ -145,7 +140,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <div className="lg:col-span-5 p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Today&apos;s Status
+                  Today
                 </span>
                 {todayRecord ? (
                   <Badge variant="emerald" className="gap-1 text-[11px]">
@@ -162,21 +157,21 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 )}
               </div>
 
-              {todayRecord ? (
+              {todayRecord && (
                 <div className="flex items-center gap-3 p-2.5 rounded-md bg-background border border-border">
                   {todayRecord.shiftType === "full" && (
-                    <div className="w-6 h-6 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10 shrink-0" />
+                    <div className="w-6 h-6 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
                   )}
                   {todayRecord.shiftType === "half_morning" && (
                     <div className="w-6 h-6 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex shrink-0">
-                      <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-                      <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
+                      <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                      <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                     </div>
                   )}
                   {todayRecord.shiftType === "half_afternoon" && (
                     <div className="w-6 h-6 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex shrink-0">
-                      <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
-                      <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+                      <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+                      <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                     </div>
                   )}
                   {todayRecord.shiftType === "leave" && (
@@ -191,10 +186,6 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                       {SHIFT_CONFIGS[todayRecord.shiftType].timeRange}
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-xs text-muted-foreground">
-                  Select a shift to mark your attendance for today:
                 </div>
               )}
 
@@ -245,32 +236,66 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </CardContent>
       </Card>
 
-      {/* Upcoming Planned Leaves Alert if any */}
+      {/* Upcoming Planned Leaves Alert - Interactive chips to edit or cancel */}
       {upcomingLeaves.length > 0 && (
         <div className="p-3.5 rounded-lg border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2">
-            <Plane className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-            <div>
-              <span className="font-semibold text-foreground">Upcoming Pre-Marked Leave:</span>{" "}
-              <span className="text-muted-foreground">
-                {upcomingLeaves
-                  .map(
-                    (l) =>
-                      `${format(l.dateObj, "EEE, MMM d")} (${
-                        l.record.notes ? l.record.notes.replace("Planned Leave: ", "") : "Leave"
-                      })`
-                  )
-                  .join("; ")}
-              </span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <Plane className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+              <span className="font-semibold text-foreground">Planned Upcoming Leaves:</span>
+              <span className="text-[11px] text-muted-foreground">(Click to change shift or cancel)</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+              {upcomingLeaves.map((l) => (
+                <span
+                  key={l.record.id}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-border text-foreground text-xs shadow-2xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCellClick({
+                        date: l.record.date,
+                        dateObj: l.dateObj,
+                        dayOfWeek: getDay(l.dateObj),
+                        isSunday: false,
+                        isWorkDay: true,
+                        isFuture: true,
+                        isToday: false,
+                        record: l.record,
+                      });
+                    }}
+                    className="font-medium hover:underline cursor-pointer flex items-center gap-1"
+                    title="Click to modify shift or reason"
+                  >
+                    <span>{format(l.dateObj, "EEE, MMM d")}</span>
+                    <span className="text-muted-foreground">
+                      &bull; {l.record.notes?.replace("Planned Leave: ", "") || "Leave"}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (confirm(`Cancel planned leave for ${format(l.dateObj, "MMM d")}?`)) {
+                        deleteAttendance(user.id, l.record.date);
+                      }
+                    }}
+                    className="text-muted-foreground hover:text-rose-600 p-0.5 rounded cursor-pointer transition-colors"
+                    title="Cancel leave"
+                  >
+                    &times;
+                  </button>
+                </span>
+              ))}
             </div>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setIsPreMarkOpen(true)}
-            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto"
+            className="h-7 text-xs text-rose-600 hover:text-rose-700 self-start sm:self-auto shrink-0"
           >
-            Plan More / Edit
+            + Add Planned Leave
           </Button>
         </div>
       )}
@@ -371,16 +396,16 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                       {day.isSunday ? (
                         <div className="w-4 h-4 rounded-[2px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800" />
                       ) : shiftType === "full" ? (
-                        <div className="w-4 h-4 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10" />
+                        <div className="w-4 h-4 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10" />
                       ) : shiftType === "half_morning" ? (
                         <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex">
-                          <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
-                          <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
+                          <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                          <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                         </div>
                       ) : shiftType === "half_afternoon" ? (
                         <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex">
-                          <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
-                          <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
+                          <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
+                          <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                         </div>
                       ) : (
                         <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent" />

@@ -43,12 +43,11 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
       if (found) {
         setCurrentUser(found);
       } else {
-        // Default to first employee (Shan)
-        setCurrentUser(USERS[1]);
+        setCurrentUser(null);
       }
     } else {
-      // Default to Shan for instant viewing
-      setCurrentUser(USERS[1]);
+      // First visit: Show Bento Login screen first so user can choose who to log in as
+      setCurrentUser(null);
     }
 
     setIsLoaded(true);

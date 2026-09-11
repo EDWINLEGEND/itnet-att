@@ -111,7 +111,7 @@ export function PreMarkLeaveModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md p-5 sm:p-6">
+      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-xl">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -271,7 +271,7 @@ export function PreMarkLeaveModal({
             </p>
           </div>
 
-          <DialogFooter className="flex items-center justify-end gap-2 pt-2 border-t border-border">
+          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-3 border-t border-border">
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
               Cancel
             </Button>

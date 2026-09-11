@@ -1,212 +1,154 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useMemo } from "react";
 import { useAttendance } from "@/lib/attendance-context";
+import { format, startOfDay } from "date-fns";
 import {
-  CalendarDays,
   Shield,
-  Clock,
   ArrowRight,
-  Lock,
-  Mail,
-  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  Sparkles,
+  Users,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { SHIFT_CONFIGS } from "@/lib/constants";
 
 export function LoginPage() {
-  const { users, login } = useAttendance();
-  const [email, setEmail] = useState("shan@itnet.com");
-  const [password, setPassword] = useState("shan123");
-  const [error, setError] = useState("");
+  const { users, quickLogin, records } = useAttendance();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    const success = login(email, password);
-    if (!success) {
-      setError("Invalid credentials. Please select one of the accounts below.");
-    }
-  };
+  const today = useMemo(() => startOfDay(new Date()), []);
+  const todayStr = useMemo(() => format(today, "yyyy-MM-dd"), [today]);
 
-  const handleSelectQuickUser = (userEmail: string, userPass: string) => {
-    setEmail(userEmail);
-    setPassword(userPass);
-    login(userEmail, userPass);
-  };
+  const adminUser = users.find((u) => u.role === "admin");
+  const employees = users.filter((u) => u.role === "employee");
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-8">
-      <Card className="w-full max-w-4xl border-border overflow-hidden shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Left Column: Schedule & Quick Accounts */}
-          <div className="p-6 sm:p-8 bg-muted/20 border-b md:border-b-0 md:border-r border-border flex flex-col justify-between space-y-6">
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center font-bold">
-                  <CalendarDays className="w-5 h-5" />
-                </div>
+    <div className="py-6 sm:py-10 max-w-5xl mx-auto w-full space-y-6">
+      <div className="text-center space-y-1.5 mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+          Select Profile
+        </h1>
+        <p className="text-xs sm:text-sm text-muted-foreground">
+          Choose who you want to log in as to enter attendance
+        </p>
+      </div>
+
+      {/* 5-Option Bento Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Option 1: Admin Tile (Bento Span 1 on mobile, featured styling) */}
+        {adminUser && (
+          <div
+            onClick={() => quickLogin(adminUser.id)}
+            className="group relative p-5 rounded-xl border border-purple-500/30 dark:border-purple-500/20 bg-gradient-to-b from-purple-50/50 to-background dark:from-purple-950/15 dark:to-background hover:border-purple-500/60 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4"
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Badge variant="purple" className="gap-1 text-[11px] font-medium">
+                  <Shield className="w-3 h-3" /> Admin Portal
+                </Badge>
+                <span className="text-[11px] text-muted-foreground font-mono">Full Access</span>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <Avatar className="h-12 w-12 border-2 border-purple-400/40">
+                  <AvatarFallback className="bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 font-bold text-sm">
+                    {adminUser.initials}
+                  </AvatarFallback>
+                </Avatar>
                 <div>
-                  <h1 className="text-base font-bold text-foreground">
-                    ITNET Attendance
-                  </h1>
-                  <p className="text-xs text-muted-foreground">
-                    Internal Attendance Tracking System
-                  </p>
+                  <h3 className="font-bold text-base text-foreground group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    {adminUser.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">{adminUser.designation}</p>
                 </div>
               </div>
 
-              {/* Working Hours & Shift Rules */}
-              <div className="p-4 rounded-lg bg-background border border-border space-y-2.5">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Working Hours & Shifts</span>
-                </div>
-
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Workdays:</span>
-                    <span className="font-medium text-foreground">Monday &ndash; Saturday</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Full Day:</span>
-                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-medium">
-                      10:00 &ndash; 18:00 (8h)
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Morning Shift:</span>
-                    <span className="font-mono text-foreground font-medium">
-                      10:00 &ndash; 14:00 (4h)
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Afternoon Shift:</span>
-                    <span className="font-mono text-foreground font-medium">
-                      14:00 &ndash; 18:00 (4h)
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Sunday:</span>
-                    <span className="text-muted-foreground/70">Non-working (Off)</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Instant 1-Click Access List */}
-              <div className="space-y-2">
-                <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  Quick Access Accounts
-                </div>
-
-                <div className="space-y-1.5">
-                  {users.map((u) => (
-                    <button
-                      key={u.id}
-                      type="button"
-                      onClick={() => handleSelectQuickUser(u.email, u.password)}
-                      className="w-full p-2.5 rounded-lg border border-border bg-background hover:bg-muted/40 flex items-center justify-between transition-colors text-left group cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-[10px]">
-                            {u.initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <div className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-                            {u.name}
-                            {u.role === "admin" && (
-                              <Badge variant="purple" className="text-[9px] px-1 py-0 h-4">
-                                Admin
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="text-[11px] text-muted-foreground">{u.designation}</div>
-                        </div>
-                      </div>
-                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all" />
-                    </button>
-                  ))}
-                </div>
+              <div className="p-2.5 rounded-lg bg-background/80 border border-purple-200/50 dark:border-purple-900/40 text-xs text-muted-foreground">
+                Company overview, analytics, team member rosters & CSV report export
               </div>
             </div>
 
-            <div className="text-[11px] text-muted-foreground pt-3 border-t border-border">
-              ITNET Internal Systems &bull; Confidential
+            <div className="pt-2 flex items-center justify-between border-t border-border text-xs font-medium text-purple-600 dark:text-purple-400 group-hover:translate-x-0.5 transition-transform">
+              <span>Open Admin Dashboard</span>
+              <ArrowRight className="w-4 h-4" />
             </div>
           </div>
+        )}
 
-          {/* Right Column: Standard Login Form */}
-          <div className="p-6 sm:p-8 flex flex-col justify-center">
-            <div className="mb-6 space-y-1">
-              <h2 className="text-lg font-bold text-foreground">Sign In</h2>
-              <p className="text-xs text-muted-foreground">
-                Enter your credentials or click any account on the left
-              </p>
-            </div>
+        {/* Options 2 - 5: The 4 Employees (Shan, Edwin, Able, Devdath) */}
+        {employees.map((emp) => {
+          const todayRec = records[`${emp.id}_${todayStr}`];
+          const isLogged = !!todayRec;
+          const shiftConfig = todayRec ? SHIFT_CONFIGS[todayRec.shiftType] : null;
 
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+          return (
+            <div
+              key={emp.id}
+              onClick={() => quickLogin(emp.id)}
+              className="group relative p-5 rounded-xl border border-border bg-card hover:border-foreground/30 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between space-y-4"
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Badge variant="outline" className="text-[10px] text-muted-foreground font-normal">
+                    Employee
+                  </Badge>
+                  {isLogged ? (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                      Logged
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      Pending
+                    </span>
+                  )}
+                </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-foreground">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="e.g. shan@itnet.com"
-                    className="w-full pl-9 pr-3 py-2 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                  />
+                <div className="flex items-center gap-3 pt-1">
+                  <Avatar className="h-12 w-12 border border-border">
+                    <AvatarFallback className="font-bold text-sm bg-muted text-foreground">
+                      {emp.initials}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <h3 className="font-bold text-base text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      {emp.name}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">{emp.designation}</p>
+                  </div>
+                </div>
+
+                {/* Today's status box */}
+                <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-xs">
+                  {todayRec && shiftConfig ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Today:</span>
+                      <span className="font-semibold text-foreground">
+                        {shiftConfig.label} ({shiftConfig.timeRange})
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between text-muted-foreground">
+                      <span>Today:</span>
+                      <span>Not marked yet</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-medium text-foreground">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="password"
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full pl-9 pr-3 py-2 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                  />
-                </div>
-              </div>
-
-              <Button type="submit" className="w-full gap-2">
-                <span>Sign In</span>
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            </form>
-
-            {/* Quick credentials reference */}
-            <div className="mt-8 p-3 rounded-lg border border-border/70 bg-muted/20 text-xs space-y-1">
-              <span className="font-semibold text-muted-foreground">Demo Credentials:</span>
-              <div className="text-[11px] text-muted-foreground font-mono space-y-0.5">
-                <div>Admin: admin@itnet.com / admin123</div>
-                <div>Employees: [shan|edwin|able|devdath]@itnet.com / [name]123</div>
+              <div className="pt-2 flex items-center justify-between border-t border-border text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                <span>Enter Attendance</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>
-          </div>
-        </div>
-      </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }

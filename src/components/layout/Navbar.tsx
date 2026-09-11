@@ -51,65 +51,52 @@ export function Navbar({ onOpenLoginModal }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         {/* Brand */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center font-bold text-sm shadow-xs">
             <CalendarDays className="w-4 h-4" />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground tracking-tight text-sm">
-              ITNET Attendance
-            </span>
-            <Badge variant="outline" className="hidden sm:inline-flex text-[11px] font-normal text-muted-foreground border-border">
-              Mon&ndash;Sat &bull; 10:00 &ndash; 18:00
-            </Badge>
-          </div>
+          <span className="font-semibold text-foreground tracking-tight text-sm">
+            ITNET
+          </span>
         </div>
 
         {/* Center: Account Switcher for Demo testing */}
-        <div className="hidden md:flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/80">
-          <span className="text-[11px] font-medium text-muted-foreground px-2">
-            Switch:
-          </span>
-          {users.map((u) => {
-            const isSelected = currentUser?.id === u.id;
-            return (
-              <Button
-                key={u.id}
-                variant={isSelected ? "default" : "ghost"}
-                size="sm"
-                onClick={() => quickLogin(u.id)}
-                className={`h-7 px-2.5 text-xs ${
-                  isSelected ? "shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {u.role === "admin" && <Shield className="w-3 h-3 mr-1 opacity-70" />}
-                <span>{u.name}</span>
-                {u.role === "admin" && (
-                  <span className="ml-1 text-[9px] px-1 py-0 rounded bg-muted/80 text-foreground font-mono">
-                    Admin
-                  </span>
-                )}
-              </Button>
-            );
-          })}
-        </div>
+        {currentUser && (
+          <div className="hidden md:flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/80">
+            {users.map((u) => {
+              const isSelected = currentUser?.id === u.id;
+              return (
+                <Button
+                  key={u.id}
+                  variant={isSelected ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => quickLogin(u.id)}
+                  className={`h-7 px-2.5 text-xs ${
+                    isSelected ? "shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {u.role === "admin" && <Shield className="w-3 h-3 mr-1 opacity-70" />}
+                  <span>{u.name}</span>
+                </Button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Right Actions */}
-        <div className="flex items-center gap-1.5">
-          {/* Mobile switcher select */}
-          <div className="md:hidden">
-            <select
-              value={currentUser?.id || ""}
-              onChange={(e) => quickLogin(e.target.value)}
-              className="text-xs h-8 px-2 bg-muted border border-border rounded-md text-foreground focus:outline-none"
+        <div className="flex items-center gap-1 sm:gap-1.5">
+          {currentUser && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={logout}
+              className="h-8 text-xs gap-1.5 px-2 sm:px-2.5 border-border"
+              title="Return to 5-Profile Bento Login"
             >
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} {u.role === "admin" ? "(Admin)" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
+              <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
+              <span className="hidden sm:inline">Switch</span>
+            </Button>
+          )}
 
           <Button
             variant="ghost"
@@ -138,20 +125,20 @@ export function Navbar({ onOpenLoginModal }: NavbarProps) {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-8 gap-2 pl-1.5 pr-2.5 border-border"
+                  className="h-8 gap-1.5 px-2 sm:px-2.5 border-border"
                 >
                   <Avatar className="h-5 w-5">
                     <AvatarFallback className="text-[10px]">
                       {currentUser.initials}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-xs font-medium">{currentUser.name}</span>
+                  <span className="text-xs font-medium hidden sm:inline">{currentUser.name}</span>
                   {currentUser.role === "admin" ? (
-                    <Badge variant="purple" className="text-[10px] px-1 py-0 h-4">
+                    <Badge variant="purple" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">
                       Admin
                     </Badge>
                   ) : (
-                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 text-muted-foreground">
+                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 text-muted-foreground hidden sm:inline-flex">
                       Staff
                     </Badge>
                   )}

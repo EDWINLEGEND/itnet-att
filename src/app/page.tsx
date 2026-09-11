@@ -36,18 +36,10 @@ function MainContent() {
         )}
       </main>
 
-      {/* Clean, Minimal Enterprise Footer */}
-      <footer className="w-full border-t border-border bg-background py-6 mt-12 text-xs text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-foreground">ITNET Systems</span>
-            <span>&bull;</span>
-            <span>Monday &ndash; Saturday (10:00 &ndash; 18:00)</span>
-          </div>
-
-          <div className="text-[11px] text-muted-foreground">
-            Attendance Tracking Portal &bull; GitHub Contribution Model
-          </div>
+      <footer className="w-full border-t border-border bg-background py-4 mt-8 text-xs text-muted-foreground">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          <span className="font-semibold text-foreground">ITNET</span>
+          <span className="text-[11px]">10:00 &ndash; 18:00 (Mon&ndash;Sat)</span>
         </div>
       </footer>
     </div>
