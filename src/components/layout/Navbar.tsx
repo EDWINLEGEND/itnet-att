@@ -32,11 +32,11 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 w-full bg-background/90 backdrop-blur-md shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center font-bold text-sm shadow-xs">
+          <div className="w-8 h-8 rounded-xl bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center font-bold text-sm shadow-xs">
             <CalendarDays className="w-4 h-4" />
           </div>
           <span className="font-bold text-foreground tracking-tight text-sm">
@@ -47,13 +47,23 @@ export function Navbar() {
         {/* Right Actions: Minimal & Clean */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {currentUser && (
-            <div className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full bg-muted/60 border border-border text-xs font-medium">
+            <div
+              className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-full text-xs font-medium shadow-2xs ${
+                currentUser.theme?.badge || "bg-muted/70 text-foreground"
+              }`}
+            >
               <Avatar className="h-5 w-5">
-                <AvatarFallback className="text-[10px] font-bold">
+                <AvatarFallback
+                  className={`text-[10px] font-bold ${
+                    currentUser.theme?.avatarBg || "bg-muted text-foreground"
+                  }`}
+                >
                   {currentUser.initials}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-foreground font-semibold truncate max-w-[65px] sm:max-w-[120px]">{currentUser.name}</span>
+              <span className="font-semibold truncate max-w-[75px] sm:max-w-[120px]">
+                {currentUser.name}
+              </span>
             </div>
           )}
 

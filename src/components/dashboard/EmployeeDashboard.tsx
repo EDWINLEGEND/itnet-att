@@ -6,7 +6,7 @@ import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
 import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
 import { useAttendance } from "@/lib/attendance-context";
-import { SHIFT_CONFIGS } from "@/lib/constants";
+import { SHIFT_CONFIGS, USER_THEMES } from "@/lib/constants";
 import {
   format,
   startOfDay,
@@ -33,6 +33,7 @@ interface EmployeeDashboardProps {
 }
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
+  const theme = user.theme || USER_THEMES[user.id] || USER_THEMES["emp-shan"];
   const { records, markAttendance, getUpcomingLeaves, deleteAttendance, isOfficialHoliday } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,45 +130,57 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Top Welcome Header - Sleek & Spaced */}
-      <div className="flex items-center justify-between gap-3 pt-1">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-            {user.name}
-          </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            {format(today, "EEEE, MMMM d, yyyy")}
-          </p>
-        </div>
+      {/* Top Ambient Pastel Header */}
+      <div className={`-mx-4 sm:-mx-6 -mt-6 mb-2 p-5 sm:p-6 rounded-b-3xl bg-gradient-to-b ${theme.pastelWash} to-transparent`}>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`w-11 h-11 rounded-2xl ${theme.avatarBg} flex items-center justify-center font-bold text-lg shadow-xs`}>
+              {user.name[0]}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  {user.name}
+                </h1>
+                <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${theme.badge}`}>
+                  {theme.name}
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {format(today, "EEEE, MMMM d, yyyy")}
+              </p>
+            </div>
+          </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedDay(null);
-              setIsModalOpen(true);
-            }}
-            className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-lg"
-          >
-            <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Past Day</span>
-          </Button>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSelectedDay(null);
+                setIsModalOpen(true);
+              }}
+              className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-background/90 shadow-2xs hover:bg-background"
+            >
+              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Past Day</span>
+            </Button>
 
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsPreMarkOpen(true)}
-            className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-lg"
-          >
-            <Plane className="w-3.5 h-3.5 text-rose-500" />
-            <span>Leave</span>
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsPreMarkOpen(true)}
+              className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-background/90 shadow-2xs hover:bg-background"
+            >
+              <Plane className="w-3.5 h-3.5 text-rose-500" />
+              <span>Leave</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      {/* Hero: Today's Shift Card - Airy, Clean & Decluttered */}
-      <Card className="border-border shadow-xs">
+      {/* Hero: Today's Shift Card - Borderless Pastel Tint */}
+      <Card className={`shadow-sm border-0 ${theme.cardTint}`}>
         <CardContent className="p-4 sm:p-5 space-y-3.5">
           <div className="flex items-center justify-between">
             <h2 className="text-sm sm:text-base font-semibold text-foreground">
@@ -205,20 +218,20 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             )}
           </div>
 
-          {/* 4 Shift Choice Cards - Clean & Breathable */}
+          {/* 4 Shift Choice Cards - Borderless & Elevated */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             {/* Full Day */}
             <button
               type="button"
               onClick={() => handleChooseShift("full")}
-              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
                 selectedTodayShift === "full"
-                  ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
+                  ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                  : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-4 h-4 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
+                <div className="w-4 h-4 rounded-[3px] bg-[#2da44e] dark:bg-[#3fb950] shrink-0" />
                 {selectedTodayShift === "full" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                 ) : (
@@ -239,16 +252,15 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_morning")}
-              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
                 selectedTodayShift === "half_morning"
-                  ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
+                  ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                  : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-4 h-4 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
+                <div className="w-4 h-4 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
                   <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
-                  <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                 </div>
                 {selectedTodayShift === "half_morning" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -270,16 +282,15 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_afternoon")}
-              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
                 selectedTodayShift === "half_afternoon"
-                  ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
+                  ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                  : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-4 h-4 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
-                  <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
-                  <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                <div className="w-4 h-4 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
+                  <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
                 </div>
                 {selectedTodayShift === "half_afternoon" ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -301,14 +312,14 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("leave")}
-              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 shadow-2xs ${
                 selectedTodayShift === "leave"
-                  ? "border-rose-500 bg-rose-500/10 dark:bg-rose-950/30 ring-2 ring-rose-500/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
+                  ? "bg-rose-500/15 dark:bg-rose-950/40 ring-2 ring-rose-500 shadow-sm"
+                  : "bg-background/90 dark:bg-zinc-800/80 hover:bg-background"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+                <div className="w-4 h-4 rounded-[3px] bg-rose-200 dark:bg-rose-900/50 shrink-0" />
                 {selectedTodayShift === "leave" ? (
                   <CheckCircle2 className="w-4 h-4 text-rose-500 shrink-0" />
                 ) : (
@@ -326,15 +337,15 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             </button>
           </div>
 
-          {/* Action Footer: Sleek Full-Width Black Save Button */}
+          {/* Action Footer: Sleek Full-Width Black Save Button (borderless) */}
           <div className="pt-2">
             <Button
               type="button"
               onClick={handleMarkTodayAttendance}
-              className={`w-full h-11 font-medium text-xs sm:text-sm rounded-xl gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.99] ${
+              className={`w-full h-11 font-medium text-xs sm:text-sm rounded-xl gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.99] border-0 ${
                 isSavedRecently
-                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600"
-                  : "bg-black hover:bg-zinc-900 text-white border border-black dark:border-zinc-800"
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                  : "bg-black hover:bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
               }`}
             >
               <CheckCircle2 className={`w-4 h-4 ${isSavedRecently ? "text-white" : "text-emerald-400"}`} />
@@ -346,7 +357,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
       {/* Upcoming Planned Leaves Alert */}
       {upcomingLeaves.length > 0 && (
-        <div className="p-3 sm:p-3.5 rounded-xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-2xs">
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 font-medium text-foreground">
               <Plane className="w-3.5 h-3.5 text-rose-500 shrink-0" />
@@ -356,7 +367,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               {upcomingLeaves.map((l) => (
                 <span
                   key={l.record.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-border text-foreground text-xs shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-background/90 text-foreground text-xs shadow-2xs"
                 >
                   <button
                     type="button"
@@ -406,9 +417,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </div>
       )}
 
-      {/* Simple Daily Attendance List */}
-      <Card className="border-border shadow-xs">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
+      {/* Simple Daily Attendance List - Borderless Card */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="p-4 sm:p-5 pb-2">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-muted-foreground" />
@@ -418,12 +429,12 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             </div>
 
             {/* Quick Filter Pills */}
-            <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg text-xs self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs self-start sm:self-auto">
               <Button
                 variant={tableFilter === "all" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTableFilter("all")}
-                className="h-7 px-2.5 text-xs"
+                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
               >
                 All
               </Button>
@@ -431,7 +442,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 variant={tableFilter === "full" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTableFilter("full")}
-                className="h-7 px-2.5 text-xs"
+                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
               >
                 Full
               </Button>
@@ -439,7 +450,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 variant={tableFilter === "half" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTableFilter("half")}
-                className="h-7 px-2.5 text-xs"
+                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
               >
                 Half
               </Button>
@@ -447,7 +458,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 variant={tableFilter === "leave" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setTableFilter("leave")}
-                className="h-7 px-2.5 text-xs"
+                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
               >
                 Leave
               </Button>
@@ -456,7 +467,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </CardHeader>
 
         <CardContent className="p-2 sm:p-3">
-          <div className="divide-y divide-border/60">
+          <div className="space-y-1">
             {recentLogs.slice(0, listLimit).map((day) => {
               const isToday = day.isToday;
               const hasRecord = !!day.record;
@@ -469,34 +480,32 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <div
                   key={day.date}
                   onClick={() => handleCellClick(day)}
-                  className={`flex items-center justify-between p-3 rounded-lg transition-colors cursor-pointer hover:bg-muted/50 ${
+                  className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer hover:bg-muted/40 ${
                     isToday ? "bg-muted/30 font-medium" : ""
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     {/* Visual Box Graphic */}
                     {day.isSunday ? (
-                      <div className="w-5 h-5 rounded-[2px] border border-dashed border-zinc-400/50 dark:border-zinc-600/50 shrink-0" />
+                      <div className="w-5 h-5 rounded-[3px] bg-muted/50 shrink-0" />
                     ) : day.isHoliday ? (
-                      <div className="w-5 h-5 rounded-[2px] bg-amber-400 dark:bg-amber-500 border border-amber-600/30 flex items-center justify-center shrink-0 shadow-2xs" title={day.holidayTitle}>
+                      <div className="w-5 h-5 rounded-[3px] bg-amber-400 dark:bg-amber-500 flex items-center justify-center shrink-0 shadow-2xs" title={day.holidayTitle}>
                         <Sparkles className="w-3 h-3 text-amber-950" />
                       </div>
                     ) : isFull ? (
-                      <div className="w-5 h-5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
+                      <div className="w-5 h-5 rounded-[3px] bg-[#2da44e] dark:bg-[#3fb950] shrink-0" />
                     ) : isMorning ? (
-                      <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
+                      <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
                         <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
-                        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                       </div>
                     ) : isAfternoon ? (
-                      <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
-                        <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
-                        <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                      <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
+                        <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
                       </div>
                     ) : isLeave ? (
-                      <div className="w-5 h-5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+                      <div className="w-5 h-5 rounded-[3px] bg-rose-200 dark:bg-rose-900/50 shrink-0" />
                     ) : (
-                      <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 bg-muted/40 shrink-0" />
+                      <div className="w-5 h-5 rounded-[3px] bg-muted/60 shrink-0" />
                     )}
 
                     <div>
@@ -528,7 +537,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
                   <div className="flex items-center gap-2">
                     {day.isSunday ? (
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      <Badge variant="secondary" className="text-[10px] text-muted-foreground">
                         Off
                       </Badge>
                     ) : day.isHoliday ? (
@@ -543,7 +552,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                         {SHIFT_CONFIGS[day.record!.shiftType].label}
                       </Badge>
                     ) : (
-                      <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                      <Badge variant="secondary" className="text-[10px] text-muted-foreground">
                         Tap to log
                       </Badge>
                     )}
@@ -554,7 +563,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
           </div>
 
           {/* List Expand / Limit Controller */}
-          <div className="pt-2 pb-1 flex items-center justify-center border-t border-border/40 mt-1">
+          <div className="pt-2 pb-1 flex items-center justify-center mt-1">
             <Button
               variant="ghost"
               size="sm"
@@ -570,10 +579,10 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
       {/* Collapsible Activity Heatmap */}
       <div className="space-y-3">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
           onClick={() => setShowHeatmap(!showHeatmap)}
-          className="w-full justify-between h-10 px-4 text-xs font-medium cursor-pointer"
+          className="w-full justify-between h-10 px-4 text-xs font-medium cursor-pointer bg-card shadow-2xs rounded-xl hover:bg-muted/40"
         >
           <span className="flex items-center gap-2">
             <Calendar className="w-3.5 h-3.5 text-emerald-600" />

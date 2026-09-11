@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { User, DayAttendance, ShiftType } from "@/types/attendance";
-import { SHIFT_CONFIGS } from "@/lib/constants";
+import { SHIFT_CONFIGS, USER_THEMES } from "@/lib/constants";
 import { useAttendance } from "@/lib/attendance-context";
 import {
   format,
@@ -137,16 +137,18 @@ function MarkAttendanceContent({
   const canEdit =
     currentUser?.role === "admin" || currentUser?.id === activeUserId;
 
+  const activeTheme = activeUser.theme || USER_THEMES[activeUserId] || USER_THEMES["emp-shan"];
+
   return (
-    <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-xl">
+    <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <DialogTitle className="text-base font-semibold">
               Edit / Log Past Attendance
             </DialogTitle>
-            <Badge variant="outline" className="text-[11px] font-mono">
+            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${activeTheme.badge}`}>
               {activeUser.name}
-            </Badge>
+            </span>
           </div>
           <DialogDescription className="text-xs text-muted-foreground">
             Select any past or current date to update attendance logs
@@ -161,20 +163,24 @@ function MarkAttendanceContent({
                 Employee
               </label>
               <div className="grid grid-cols-4 gap-1.5">
-                {employees.map((emp) => (
-                  <button
-                    key={emp.id}
-                    type="button"
-                    onClick={() => handleUserChange(emp.id)}
-                    className={`py-1.5 px-2 rounded-md text-xs font-medium border transition-colors cursor-pointer text-center truncate ${
-                      activeUserId === emp.id
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-muted/30 border-border text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {emp.name}
-                  </button>
-                ))}
+                {employees.map((emp) => {
+                  const empTheme = emp.theme || USER_THEMES[emp.id] || USER_THEMES["emp-shan"];
+                  const isSelected = activeUserId === emp.id;
+                  return (
+                    <button
+                      key={emp.id}
+                      type="button"
+                      onClick={() => handleUserChange(emp.id)}
+                      className={`py-1.5 px-2 rounded-xl text-xs font-medium transition-colors cursor-pointer text-center truncate ${
+                        isSelected
+                          ? `${empTheme.badge} shadow-2xs font-semibold`
+                          : "bg-muted/40 text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {emp.name}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -189,21 +195,21 @@ function MarkAttendanceContent({
                 <button
                   type="button"
                   onClick={() => handleDateChange(format(subDays(today, 1), "yyyy-MM-dd"))}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 >
                   Yesterday
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDateChange(format(subDays(today, 2), "yyyy-MM-dd"))}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 >
                   2 Days Ago
                 </button>
                 <button
                   type="button"
                   onClick={() => handleDateChange(todayStr)}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer transition-colors"
                 >
                   Today
                 </button>
@@ -213,9 +219,9 @@ function MarkAttendanceContent({
             <div className="flex items-center gap-2">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-9 px-2.5 text-xs text-muted-foreground shrink-0 cursor-pointer"
+                className="h-9 px-2.5 text-xs text-muted-foreground shrink-0 cursor-pointer bg-muted/40 hover:bg-muted/70 rounded-xl"
                 onClick={() => handleDateChange(format(subDays(parsedDate, 1), "yyyy-MM-dd"))}
                 title="Previous Day"
               >
@@ -225,13 +231,13 @@ function MarkAttendanceContent({
                 type="date"
                 value={selectedDate}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="flex-1 text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="flex-1 text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
               />
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 size="sm"
-                className="h-9 px-2.5 text-xs text-muted-foreground shrink-0 cursor-pointer"
+                className="h-9 px-2.5 text-xs text-muted-foreground shrink-0 cursor-pointer bg-muted/40 hover:bg-muted/70 rounded-xl"
                 onClick={() => handleDateChange(format(addDays(parsedDate, 1), "yyyy-MM-dd"))}
                 title="Next Day"
               >
@@ -254,13 +260,13 @@ function MarkAttendanceContent({
           </div>
 
           {isPlannedLeave && (
-            <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300">
+            <div className="p-3 rounded-xl bg-rose-500/10 text-xs text-rose-700 dark:text-rose-300">
               <span className="font-semibold">Pre-Marked Leave:</span> Switch this to a Full/Half shift or click Delete below to cancel.
             </div>
           )}
 
           {officialHoliday && (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
+            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs flex items-start gap-2">
               <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-amber-500" />
               <div>
                 <div className="font-semibold flex items-center gap-1.5">
@@ -275,7 +281,7 @@ function MarkAttendanceContent({
           )}
 
           {isSunday && (
-            <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
+            <div className="p-3 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 text-xs flex items-start gap-2">
               <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
               <div>
                 <span className="font-semibold">Sunday Note:</span> Non-working weekend day for ITNETAI (Mon&ndash;Sat schedule).
@@ -283,7 +289,7 @@ function MarkAttendanceContent({
             </div>
           )}
 
-          {/* Shift Type Options */}
+          {/* Shift Type Options - Clean Borderless */}
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
               Shift Type
@@ -294,14 +300,14 @@ function MarkAttendanceContent({
               <button
                 type="button"
                 onClick={() => setSelectedShift("full")}
-                className={`flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer shadow-2xs ${
                   selectedShift === "full"
-                    ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-600"
-                    : "border-border hover:bg-muted/40"
+                    ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                    : "bg-muted/30 hover:bg-muted/60"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
+                  <div className="w-5 h-5 rounded-[3px] bg-[#2da44e] dark:bg-[#3fb950] shrink-0" />
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Full Shift
@@ -321,21 +327,20 @@ function MarkAttendanceContent({
               <button
                 type="button"
                 onClick={() => setSelectedShift("half_morning")}
-                className={`flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer shadow-2xs ${
                   selectedShift === "half_morning"
-                    ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-600"
-                    : "border-border hover:bg-muted/40"
+                    ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                    : "bg-muted/30 hover:bg-muted/60"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
+                  <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
                     <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Morning Half
-                      <Badge variant="outline" className="text-[10px] py-0 font-mono">
+                      <Badge variant="secondary" className="text-[10px] py-0 font-mono">
                         4h
                       </Badge>
                     </div>
@@ -351,21 +356,20 @@ function MarkAttendanceContent({
               <button
                 type="button"
                 onClick={() => setSelectedShift("half_afternoon")}
-                className={`flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer shadow-2xs ${
                   selectedShift === "half_afternoon"
-                    ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-600"
-                    : "border-border hover:bg-muted/40"
+                    ? "bg-emerald-500/15 dark:bg-emerald-950/40 ring-2 ring-emerald-600 shadow-sm"
+                    : "bg-muted/30 hover:bg-muted/60"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
-                    <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
-                    <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                  <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
+                    <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Afternoon Half
-                      <Badge variant="outline" className="text-[10px] py-0 font-mono">
+                      <Badge variant="secondary" className="text-[10px] py-0 font-mono">
                         4h
                       </Badge>
                     </div>
@@ -381,14 +385,14 @@ function MarkAttendanceContent({
               <button
                 type="button"
                 onClick={() => setSelectedShift("leave")}
-                className={`flex items-center justify-between p-3 rounded-lg border text-left transition-all cursor-pointer ${
+                className={`flex items-center justify-between p-3 rounded-xl text-left transition-all cursor-pointer shadow-2xs ${
                   selectedShift === "leave"
-                    ? "border-rose-500 bg-rose-500/10 ring-1 ring-rose-500"
-                    : "border-border hover:bg-muted/40"
+                    ? "bg-rose-500/15 ring-2 ring-rose-500 shadow-sm"
+                    : "bg-muted/30 hover:bg-muted/60"
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-5 h-5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+                  <div className="w-5 h-5 rounded-[3px] bg-rose-200 dark:bg-rose-900/50 shrink-0" />
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-foreground flex items-center gap-2">
                       Leave / Absent
@@ -415,19 +419,19 @@ function MarkAttendanceContent({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Remote work, doctor appointment, approved leave"
-              className="w-full px-3 py-2 text-xs bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full px-3 py-2 text-xs bg-muted/40 rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
             />
           </div>
         </div>
 
-        <DialogFooter className="flex flex-row items-center justify-between pt-3 border-t border-border gap-2">
+        <DialogFooter className="flex flex-row items-center justify-between pt-3 gap-2">
           <div>
             {currentRecord && canEdit && (
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleDelete}
-                className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 px-2 sm:px-3 cursor-pointer"
+                className="text-xs text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1 px-2.5 sm:px-3 rounded-xl cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Delete</span>
@@ -435,15 +439,15 @@ function MarkAttendanceContent({
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onClose} className="px-2.5 sm:px-3 cursor-pointer">
+            <Button variant="ghost" size="sm" onClick={onClose} className="px-2.5 sm:px-3 rounded-xl bg-muted/40 hover:bg-muted/70 cursor-pointer">
               Cancel
             </Button>
             <Button
-              variant="default"
+              type="button"
               size="sm"
               onClick={handleSave}
               disabled={!canEdit}
-              className="px-3 cursor-pointer"
+              className="px-3.5 rounded-xl bg-black hover:bg-zinc-900 text-white cursor-pointer shadow-xs dark:bg-zinc-100 dark:text-zinc-900 border-0"
             >
               Save Record
             </Button>

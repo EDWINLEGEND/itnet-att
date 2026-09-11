@@ -42,14 +42,14 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-xl">
+      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
             <DialogTitle className="text-base font-semibold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-500" />
               Official Company Holidays
             </DialogTitle>
-            <Badge variant="outline" className="text-[10px] font-mono">
+            <Badge variant="emerald" className="text-[10px] font-mono">
               Admin
             </Badge>
           </div>
@@ -59,7 +59,7 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
         </DialogHeader>
 
         {/* Add Holiday Form */}
-        <form onSubmit={handleAdd} className="space-y-3 pt-3 pb-2 border-b border-border/60">
+        <form onSubmit={handleAdd} className="space-y-3 pt-3 pb-2">
           <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Declare New Holiday
           </div>
@@ -74,7 +74,7 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
                 required
-                className="w-full text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500 border-0"
               />
             </div>
 
@@ -88,11 +88,11 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Onam Festival, Gandhi Jayanti, Founders Day"
                 required
-                className="w-full text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500 border-0"
               />
             </div>
 
-            <Button type="submit" size="sm" className="w-full h-8 text-xs gap-1.5 cursor-pointer mt-1">
+            <Button type="submit" size="sm" className="w-full h-9 text-xs gap-1.5 cursor-pointer mt-1 rounded-xl bg-black hover:bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs border-0">
               <Plus className="w-3.5 h-3.5" />
               <span>Set Official Holiday</span>
             </Button>
@@ -108,7 +108,7 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
           </div>
 
           {sortedHolidays.length === 0 ? (
-            <div className="py-6 text-center text-xs text-muted-foreground border border-dashed border-border rounded-lg bg-muted/20">
+            <div className="py-6 text-center text-xs text-muted-foreground rounded-2xl bg-muted/30 shadow-2xs">
               No official holidays declared yet. Use the form above to add one.
             </div>
           ) : (
@@ -124,10 +124,10 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
                 return (
                   <div
                     key={h.date}
-                    className="flex items-center justify-between p-2.5 rounded-lg border border-border bg-muted/20 text-xs"
+                    className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 text-xs shadow-2xs"
                   >
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-md bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                      <div className="w-7 h-7 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 shadow-2xs">
                         <Calendar className="w-3.5 h-3.5" />
                       </div>
                       <div>
@@ -147,7 +147,7 @@ export function OfficialHolidaysModal({ isOpen, onClose }: OfficialHolidaysModal
                       type="button"
                       onClick={() => deleteHoliday(h.date)}
                       title="Delete holiday"
-                      className="text-muted-foreground hover:text-rose-600 p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+                      className="text-muted-foreground hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>

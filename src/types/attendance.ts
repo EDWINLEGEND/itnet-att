@@ -2,6 +2,17 @@ export type Role = "admin" | "employee";
 
 export type ShiftType = "full" | "half_morning" | "half_afternoon" | "leave";
 
+export interface UserTheme {
+  name: string;
+  pastelBg: string;
+  pastelWash: string;
+  badge: string;
+  avatarBg: string;
+  accentText: string;
+  cardTint: string;
+  indicatorBg: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -11,6 +22,7 @@ export interface User {
   designation: string;
   avatar: string;
   initials: string;
+  theme?: UserTheme;
 }
 
 export interface AttendanceRecord {

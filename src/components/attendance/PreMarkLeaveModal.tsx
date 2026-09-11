@@ -111,10 +111,10 @@ export function PreMarkLeaveModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-xl">
+      <DialogContent className="w-[94vw] sm:max-w-md p-4 sm:p-6 max-h-[92vh] overflow-y-auto rounded-2xl border-0 shadow-2xl">
         <DialogHeader className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <Plane className="w-4 h-4" />
             </div>
             <DialogTitle className="text-base font-semibold">
@@ -136,7 +136,7 @@ export function PreMarkLeaveModal({
               <select
                 value={targetUserId}
                 onChange={(e) => setTargetUserId(e.target.value)}
-                className="w-full text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                className="w-full text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
               >
                 {users
                   .filter((u) => u.role === "employee")
@@ -159,14 +159,14 @@ export function PreMarkLeaveModal({
                 <button
                   type="button"
                   onClick={() => handleApplyPresetDate("tomorrow")}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground"
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Tomorrow
                 </button>
                 <button
                   type="button"
                   onClick={() => handleApplyPresetDate("next_mon")}
-                  className="text-[11px] px-2 py-0.5 rounded bg-muted text-muted-foreground hover:text-foreground"
+                  className="text-[11px] px-2 py-0.5 rounded-lg bg-muted/50 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
                   Next Monday
                 </button>
@@ -190,7 +190,7 @@ export function PreMarkLeaveModal({
                         setEndDate(e.target.value);
                       }
                     }}
-                    className="w-full text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    className="w-full text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
                   />
                 </div>
 
@@ -205,7 +205,7 @@ export function PreMarkLeaveModal({
                       min={startDate}
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full text-xs h-9 px-3 bg-background border border-border rounded-md text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                      className="w-full text-xs h-9 px-3 bg-muted/40 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
                     />
                   </div>
                 )}
@@ -217,7 +217,7 @@ export function PreMarkLeaveModal({
                   type="checkbox"
                   checked={isMultiDay}
                   onChange={(e) => setIsMultiDay(e.target.checked)}
-                  className="rounded border-border text-emerald-600 focus:ring-emerald-500"
+                  className="rounded text-emerald-600 focus:ring-emerald-500"
                 />
                 <span>Multiple consecutive days leave</span>
               </label>
@@ -238,10 +238,10 @@ export function PreMarkLeaveModal({
                     setSelectedPreset(preset);
                     setCustomReason("");
                   }}
-                  className={`text-xs px-2.5 py-1 rounded-md border transition-all ${
+                  className={`text-xs px-2.5 py-1 rounded-xl transition-all cursor-pointer shadow-2xs ${
                     selectedPreset === preset && !customReason
-                      ? "bg-foreground text-background border-foreground font-medium"
-                      : "bg-background border-border text-muted-foreground hover:text-foreground"
+                      ? "bg-foreground text-background font-semibold"
+                      : "bg-muted/40 text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {preset}
@@ -254,15 +254,15 @@ export function PreMarkLeaveModal({
               value={customReason}
               onChange={(e) => setCustomReason(e.target.value)}
               placeholder="Or write custom reason (optional)..."
-              className="w-full text-xs px-3 py-2 bg-background border border-border rounded-md text-foreground placeholder-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+              className="w-full text-xs px-3 py-2 bg-muted/40 rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500 border-0"
             />
           </div>
 
           {/* Schedule Summary Banner */}
-          <div className="p-3 rounded-lg border border-border bg-muted/20 text-xs space-y-1">
+          <div className="p-3.5 rounded-2xl bg-muted/30 text-xs space-y-1 shadow-2xs">
             <div className="flex items-center justify-between font-medium text-foreground">
               <span>Scheduled Workdays Affected:</span>
-              <Badge variant="outline" className="font-mono text-rose-600 dark:text-rose-400">
+              <Badge variant="secondary" className="font-mono text-rose-600 dark:text-rose-400 font-semibold">
                 {daysCount} {daysCount === 1 ? "workday" : "workdays"}
               </Badge>
             </div>
@@ -271,11 +271,11 @@ export function PreMarkLeaveModal({
             </p>
           </div>
 
-          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-3 border-t border-border">
-            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+          <DialogFooter className="flex flex-row items-center justify-end gap-2 pt-3">
+            <Button type="button" variant="ghost" size="sm" onClick={onClose} className="rounded-xl bg-muted/40 hover:bg-muted/70">
               Cancel
             </Button>
-            <Button type="submit" size="sm" disabled={daysCount <= 0}>
+            <Button type="submit" size="sm" disabled={daysCount <= 0} className="rounded-xl bg-black hover:bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs border-0">
               Confirm Planned Leave
             </Button>
           </DialogFooter>

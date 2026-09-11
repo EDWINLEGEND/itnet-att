@@ -7,7 +7,7 @@ import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
 import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
 import { OfficialHolidaysModal } from "../admin/OfficialHolidaysModal";
 import { useAttendance } from "@/lib/attendance-context";
-import { SHIFT_CONFIGS } from "@/lib/constants";
+import { SHIFT_CONFIGS, USER_THEMES } from "@/lib/constants";
 import { format, startOfDay, getDay } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -123,12 +123,12 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
   return (
     <div className="space-y-6">
       {/* Executive Header Card */}
-      <Card className="border-border">
+      <Card className="border-0 shadow-sm">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Badge variant="purple" className="gap-1 font-mono text-[10px]">
+                <Badge variant="emerald" className="gap-1 font-mono text-[10px]">
                   <ShieldCheck className="w-3 h-3" /> Admin
                 </Badge>
               </div>
@@ -139,43 +139,43 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
 
             <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setIsHolidayModalOpen(true)}
-                className="gap-1.5 border-amber-500/30 hover:bg-amber-500/10 text-amber-700 dark:text-amber-400 cursor-pointer"
+                className="gap-1.5 bg-amber-500/15 hover:bg-amber-500/25 text-amber-800 dark:text-amber-300 shadow-2xs rounded-xl cursor-pointer"
               >
                 <Sparkles className="w-4 h-4 text-amber-500" />
                 <span>Official Holidays</span>
               </Button>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => {
                   setSelectedDay(null);
                   setIsModalOpen(true);
                 }}
-                className="gap-1.5"
+                className="gap-1.5 bg-muted/50 hover:bg-muted/80 shadow-2xs rounded-xl cursor-pointer"
               >
                 <Calendar className="w-4 h-4 text-emerald-600" />
                 <span>Edit Past Day</span>
               </Button>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={() => setIsPreMarkOpen(true)}
-                className="gap-1.5"
+                className="gap-1.5 bg-muted/50 hover:bg-muted/80 shadow-2xs rounded-xl cursor-pointer"
               >
                 <Plane className="w-4 h-4 text-rose-500" />
                 <span>Pre-Mark Leave</span>
               </Button>
 
               <Button
-                variant="outline"
+                variant="ghost"
                 size="sm"
                 onClick={handleExportCSV}
-                className="gap-2"
+                className="gap-2 bg-muted/50 hover:bg-muted/80 shadow-2xs rounded-xl cursor-pointer"
               >
                 <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
                 <span>Export CSV</span>
@@ -185,7 +185,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
 
           {/* Today's Official Holiday Banner (if declared) */}
           {isOfficialHoliday(todayStr) && (
-            <div className="mt-4 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between">
+            <div className="mt-4 p-3.5 rounded-2xl bg-amber-500/10 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between shadow-2xs">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                 <span className="font-semibold">Today is an Official Holiday: {isOfficialHoliday(todayStr)?.title}</span>
@@ -196,8 +196,8 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
           )}
 
           {/* Metric Stats Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-border">
-            <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-2">
+            <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Avg Rate</span>
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
@@ -208,7 +208,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               <div className="text-[10px] text-muted-foreground mt-0.5">Team 90-day average</div>
             </div>
 
-            <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
+            <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Full Day</span>
                 <span className="w-2 h-2 rounded-[1.5px] bg-[#2da44e] dark:bg-[#3fb950]" />
@@ -219,7 +219,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               <div className="text-[10px] text-muted-foreground mt-0.5">8h &bull; Standard shift</div>
             </div>
 
-            <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
+            <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>Half Shifts</span>
                 <span className="w-2 h-2 rounded-[1.5px] bg-[#2da44e] dark:bg-[#3fb950]" />
@@ -232,10 +232,10 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               </div>
             </div>
 
-            <div className="p-3.5 rounded-lg border border-border/80 bg-muted/20">
+            <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
               <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center justify-between">
                 <span>On Leave</span>
-                <span className="w-2 h-2 rounded-[1.5px] border border-zinc-400 dark:border-zinc-600" />
+                <span className="w-2 h-2 rounded-[1.5px] bg-rose-200 dark:bg-rose-900/50" />
               </div>
               <div className="text-2xl font-bold font-mono text-rose-500 mt-1">
                 {todayOverview.leave}
@@ -247,8 +247,8 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
       </Card>
 
       {/* Today's Team Attendance (1-Tap Quick Action List) */}
-      <Card className="border-border shadow-xs">
-        <CardHeader className="p-4 sm:p-5 pb-3 border-b border-border/60">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="p-4 sm:p-5 pb-2">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <CardTitle className="text-sm sm:text-base font-semibold">
@@ -258,32 +258,34 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                 Tap any option to update attendance for today instantly
               </p>
             </div>
-            <Badge variant="outline" className="text-xs font-mono">
+            <Badge variant="secondary" className="text-xs font-mono">
               {format(today, "EEE, MMM d")}
             </Badge>
           </div>
         </CardHeader>
 
         <CardContent className="p-2 sm:p-3">
-          <div className="divide-y divide-border/60">
+          <div className="space-y-1.5">
             {employees.map((emp) => {
               const rec = records[`${emp.id}_${todayStr}`];
               const shift = rec?.shiftType;
+              const empTheme = emp.theme || USER_THEMES[emp.id] || USER_THEMES["emp-shan"];
 
               return (
                 <div
                   key={emp.id}
-                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 rounded-lg hover:bg-muted/30 transition-colors"
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-3 gap-3 rounded-xl hover:bg-muted/30 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border border-border shrink-0">
-                      <AvatarFallback className="text-xs font-bold bg-muted text-foreground">
-                        {emp.initials}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className={`h-9 w-9 rounded-xl ${empTheme.avatarBg} flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs`}>
+                      {emp.initials}
+                    </div>
                     <div>
                       <div className="font-semibold text-sm text-foreground flex items-center gap-2">
                         <span>{emp.name}</span>
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${empTheme.badge}`}>
+                          {empTheme.name}
+                        </span>
                         {shift ? (
                           <Badge
                             variant={shift === "leave" ? "destructive" : "emerald"}
@@ -303,36 +305,44 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                   {/* 4 Quick 1-Tap Buttons for Admin */}
                   <div className="grid grid-cols-4 gap-1 sm:gap-1.5 self-stretch sm:self-auto">
                     <Button
-                      variant={shift === "full" ? "default" : "outline"}
+                      variant={shift === "full" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => markAttendance(emp.id, todayStr, "full")}
-                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                      className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
+                        shift === "full" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
+                      }`}
                     >
                       Full
                     </Button>
                     <Button
-                      variant={shift === "half_morning" ? "default" : "outline"}
+                      variant={shift === "half_morning" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => markAttendance(emp.id, todayStr, "half_morning")}
-                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                      className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
+                        shift === "half_morning" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
+                      }`}
                     >
                       <span className="hidden xs:inline">Morning</span>
                       <span className="xs:hidden">Morn</span>
                     </Button>
                     <Button
-                      variant={shift === "half_afternoon" ? "default" : "outline"}
+                      variant={shift === "half_afternoon" ? "default" : "ghost"}
                       size="sm"
                       onClick={() => markAttendance(emp.id, todayStr, "half_afternoon")}
-                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                      className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
+                        shift === "half_afternoon" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
+                      }`}
                     >
                       <span className="hidden xs:inline">Afternoon</span>
                       <span className="xs:hidden">Aft</span>
                     </Button>
                     <Button
-                      variant={shift === "leave" ? "destructive" : "outline"}
+                      variant={shift === "leave" ? "destructive" : "ghost"}
                       size="sm"
                       onClick={() => markAttendance(emp.id, todayStr, "leave")}
-                      className="h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium"
+                      className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
+                        shift === "leave" ? "" : "bg-muted/40 hover:bg-muted/70"
+                      }`}
                     >
                       Leave
                     </Button>
@@ -346,7 +356,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
 
       {/* Team Upcoming Planned Leaves Banner */}
       {allUpcomingLeaves.length > 0 && (
-        <div className="p-3.5 rounded-lg border border-border bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-2xs">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <Plane className="w-4 h-4 text-rose-500 shrink-0" />
@@ -357,7 +367,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               {allUpcomingLeaves.map((l) => (
                 <span
                   key={l.record.id}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-border text-foreground text-xs shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-background/90 text-foreground text-xs shadow-2xs"
                 >
                   <button
                     type="button"
@@ -410,8 +420,8 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
       )}
 
       {/* Team Roster Table */}
-      <Card className="border-border">
-        <CardHeader className="p-4 sm:p-6 pb-4 border-b border-border/60">
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="p-4 sm:p-6 pb-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4 text-muted-foreground" />
@@ -426,7 +436,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
         <CardContent className="p-0">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="border-border/40">
                 <TableHead className="pl-6">Employee</TableHead>
                 <TableHead>Today&apos;s Status</TableHead>
                 <TableHead>Attendance Rate</TableHead>
@@ -441,18 +451,22 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
             <TableBody>
               {employeeStats.map(({ user, stats, todayRec }) => {
                 const config = todayRec ? SHIFT_CONFIGS[todayRec.shiftType] : null;
+                const empTheme = user.theme || USER_THEMES[user.id] || USER_THEMES["emp-shan"];
 
                 return (
-                  <TableRow key={user.id}>
+                  <TableRow key={user.id} className="border-border/30">
                     <TableCell className="pl-6 font-medium">
                       <div className="flex items-center gap-2.5">
-                        <Avatar className="h-7 w-7">
-                          <AvatarFallback className="text-[10px]">
-                            {user.initials}
-                          </AvatarFallback>
-                        </Avatar>
+                        <div className={`h-7 w-7 rounded-lg ${empTheme.avatarBg} flex items-center justify-center text-[10px] font-bold shrink-0 shadow-2xs`}>
+                          {user.initials}
+                        </div>
                         <div>
-                          <div className="font-semibold text-foreground text-xs">{user.name}</div>
+                          <div className="font-semibold text-foreground text-xs flex items-center gap-1.5">
+                            <span>{user.name}</span>
+                            <span className={`text-[9px] font-semibold px-1.5 py-0.2 rounded-full ${empTheme.badge}`}>
+                              {empTheme.name}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -461,22 +475,20 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                       {config ? (
                         <div className="flex items-center gap-2">
                           {config.type === "full" && (
-                            <div className="w-3.5 h-3.5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10" />
+                            <div className="w-3.5 h-3.5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950]" />
                           )}
                           {config.type === "half_morning" && (
-                            <div className="w-3.5 h-3.5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden flex">
+                            <div className="w-3.5 h-3.5 rounded-[2px] overflow-hidden flex bg-zinc-200 dark:bg-zinc-700">
                               <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
-                              <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                             </div>
                           )}
                           {config.type === "half_afternoon" && (
-                            <div className="w-3.5 h-3.5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden flex">
-                              <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
-                              <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                            <div className="w-3.5 h-3.5 rounded-[2px] overflow-hidden flex bg-zinc-200 dark:bg-zinc-700">
+                              <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
                             </div>
                           )}
                           {config.type === "leave" && (
-                            <div className="w-3.5 h-3.5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent" />
+                            <div className="w-3.5 h-3.5 rounded-[2px] bg-rose-200 dark:bg-rose-900/50" />
                           )}
                           <Badge
                             variant={
@@ -541,7 +553,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                           };
                           handleCellClick(user, todayItem);
                         }}
-                        className="h-7 px-2 text-xs"
+                        className="h-7 px-2 text-xs rounded-lg hover:bg-muted/70"
                       >
                         <Edit3 className="w-3 h-3 mr-1" />
                         <span>Log</span>
@@ -565,12 +577,12 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
             </h2>
           </div>
 
-          <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg text-xs self-start sm:self-auto overflow-x-auto max-w-full">
+          <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs self-start sm:self-auto overflow-x-auto max-w-full">
             <Button
               variant={activeTab === "all" ? "default" : "ghost"}
               size="sm"
               onClick={() => setActiveTab("all")}
-              className="h-7 text-xs"
+              className={`h-7 text-xs rounded-lg shadow-none ${activeTab === "all" ? "bg-background text-foreground shadow-2xs font-semibold" : ""}`}
             >
               All (4 Members)
             </Button>
@@ -580,7 +592,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                 variant={activeTab === emp.id ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setActiveTab(emp.id)}
-                className="h-7 text-xs"
+                className={`h-7 text-xs rounded-lg shadow-none ${activeTab === emp.id ? "bg-background text-foreground shadow-2xs font-semibold" : ""}`}
               >
                 {emp.name}
               </Button>
