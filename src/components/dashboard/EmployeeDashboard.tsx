@@ -127,6 +127,19 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => {
+                    setSelectedDay(null);
+                    setIsModalOpen(true);
+                  }}
+                  className="h-8 gap-1.5 text-xs"
+                >
+                  <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Edit Past Day</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setIsPreMarkOpen(true)}
                   className="h-8 gap-1.5 text-xs"
                 >

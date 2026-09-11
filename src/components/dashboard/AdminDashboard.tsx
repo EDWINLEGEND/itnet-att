@@ -138,6 +138,19 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
               <Button
                 variant="outline"
                 size="sm"
+                onClick={() => {
+                  setSelectedDay(null);
+                  setIsModalOpen(true);
+                }}
+                className="gap-1.5"
+              >
+                <Calendar className="w-4 h-4 text-emerald-600" />
+                <span>Edit Past Day</span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => setIsPreMarkOpen(true)}
                 className="gap-1.5"
               >

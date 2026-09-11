@@ -3,33 +3,17 @@
 import React, { useState } from "react";
 import { useAttendance } from "@/lib/attendance-context";
 import {
-  Clock,
-  LogOut,
   RotateCcw,
   Moon,
   Sun,
-  ChevronDown,
-  Shield,
+  LogOut,
   CalendarDays,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
-interface NavbarProps {
-  onOpenLoginModal?: () => void;
-}
-
-export function Navbar({ onOpenLoginModal }: NavbarProps) {
-  const { currentUser, users, quickLogin, logout, resetDemoData } = useAttendance();
+export function Navbar() {
+  const { currentUser, logout, resetDemoData } = useAttendance();
   const [isDark, setIsDark] = useState(false);
 
   const toggleTheme = () => {
@@ -51,59 +35,34 @@ export function Navbar({ onOpenLoginModal }: NavbarProps) {
     <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         {/* Brand */}
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-8 h-8 rounded-lg bg-zinc-900 text-zinc-50 dark:bg-zinc-100 dark:text-zinc-900 flex items-center justify-center font-bold text-sm shadow-xs">
             <CalendarDays className="w-4 h-4" />
           </div>
-          <span className="font-semibold text-foreground tracking-tight text-sm">
+          <span className="font-bold text-foreground tracking-tight text-sm">
             ITNET
           </span>
         </div>
 
-        {/* Center: Account Switcher for Demo testing */}
-        {currentUser && (
-          <div className="hidden md:flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border/80">
-            {users.map((u) => {
-              const isSelected = currentUser?.id === u.id;
-              return (
-                <Button
-                  key={u.id}
-                  variant={isSelected ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => quickLogin(u.id)}
-                  className={`h-7 px-2.5 text-xs ${
-                    isSelected ? "shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {u.role === "admin" && <Shield className="w-3 h-3 mr-1 opacity-70" />}
-                  <span>{u.name}</span>
-                </Button>
-              );
-            })}
-          </div>
-        )}
-
-        {/* Right Actions */}
-        <div className="flex items-center gap-1 sm:gap-1.5">
+        {/* Right Actions: Minimal & Clean */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {currentUser && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="h-8 text-xs gap-1.5 px-2 sm:px-2.5 border-border"
-              title="Return to 5-Profile Bento Login"
-            >
-              <LogOut className="w-3.5 h-3.5 text-muted-foreground" />
-              <span className="hidden sm:inline">Switch</span>
-            </Button>
+            <div className="flex items-center gap-2 pl-2 pr-2.5 py-1 rounded-full bg-muted/60 border border-border text-xs font-medium">
+              <Avatar className="h-5 w-5">
+                <AvatarFallback className="text-[10px] font-bold">
+                  {currentUser.initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-foreground font-semibold">{currentUser.name}</span>
+            </div>
           )}
 
           <Button
             variant="ghost"
             size="icon"
             onClick={handleResetData}
-            title="Reset to default demo data"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            title="Reset data"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </Button>
@@ -113,79 +72,20 @@ export function Navbar({ onOpenLoginModal }: NavbarProps) {
             size="icon"
             onClick={toggleTheme}
             title="Toggle theme"
-            className="h-8 w-8 text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
           >
             {isDark ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
           </Button>
 
-          {/* User profile dropdown */}
-          {currentUser ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 gap-1.5 px-2 sm:px-2.5 border-border"
-                >
-                  <Avatar className="h-5 w-5">
-                    <AvatarFallback className="text-[10px]">
-                      {currentUser.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-xs font-medium hidden sm:inline">{currentUser.name}</span>
-                  {currentUser.role === "admin" ? (
-                    <Badge variant="purple" className="text-[10px] px-1 py-0 h-4 hidden sm:inline-flex">
-                      Admin
-                    </Badge>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 text-muted-foreground hidden sm:inline-flex">
-                      Staff
-                    </Badge>
-                  )}
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="font-semibold text-foreground">{currentUser.name}</div>
-                  <div className="text-[11px] text-muted-foreground font-normal">
-                    {currentUser.designation}
-                  </div>
-                  <div className="text-[10px] text-muted-foreground/70 font-mono mt-0.5">
-                    {currentUser.email}
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-
-                <div className="px-2 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                  Switch Account
-                </div>
-                {users.map((u) => (
-                  <DropdownMenuItem
-                    key={u.id}
-                    onClick={() => quickLogin(u.id)}
-                    className="flex items-center justify-between cursor-pointer"
-                  >
-                    <span>{u.name}</span>
-                    {u.role === "admin" && (
-                      <span className="text-[10px] font-mono text-purple-500">Admin</span>
-                    )}
-                  </DropdownMenuItem>
-                ))}
-
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={logout}
-                  className="text-rose-600 dark:text-rose-400 cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5 mr-2" />
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button size="sm" onClick={onOpenLoginModal}>
-              Sign In
+          {currentUser && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={logout}
+              title="Sign Out / Back to Profile Selector"
+              className="h-8 w-8 text-muted-foreground hover:text-rose-600 cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
             </Button>
           )}
         </div>

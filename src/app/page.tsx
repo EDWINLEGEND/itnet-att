@@ -1,15 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { AttendanceProvider, useAttendance } from "@/lib/attendance-context";
 import { Navbar } from "@/components/layout/Navbar";
 import { EmployeeDashboard } from "@/components/dashboard/EmployeeDashboard";
 import { AdminDashboard } from "@/components/dashboard/AdminDashboard";
 import { LoginPage } from "@/components/auth/LoginPage";
+import { BottomNav } from "@/components/layout/BottomNav";
 
 function MainContent() {
   const { currentUser, isLoaded } = useAttendance();
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   if (!isLoaded) {
     return (
@@ -23,10 +23,14 @@ function MainContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors">
-      <Navbar onOpenLoginModal={() => setShowLoginModal(true)} />
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors relative">
+      <Navbar />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 ${
+        !currentUser
+          ? "flex items-center justify-center min-h-[calc(100dvh-3.5rem)] py-2"
+          : "py-6 pb-28 sm:pb-32"
+      }`}>
         {!currentUser ? (
           <LoginPage />
         ) : currentUser.role === "admin" ? (
@@ -36,12 +40,17 @@ function MainContent() {
         )}
       </main>
 
-      <footer className="w-full border-t border-border bg-background py-4 mt-8 text-xs text-muted-foreground">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-          <span className="font-semibold text-foreground">ITNET</span>
-          <span className="text-[11px]">10:00 &ndash; 18:00 (Mon&ndash;Sat)</span>
-        </div>
-      </footer>
+      {currentUser && (
+        <footer className="w-full border-t border-border bg-background py-4 mb-20 text-xs text-muted-foreground">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+            <span className="font-semibold text-foreground">ITNET</span>
+            <span className="text-[11px]">10:00 &ndash; 18:00 (Mon&ndash;Sat)</span>
+          </div>
+        </footer>
+      )}
+
+      {/* 5-Option Bottom Navigation Dock */}
+      <BottomNav />
     </div>
   );
 }

@@ -35,6 +35,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
   // Initialize from storage on mount
   useEffect(() => {
     const loadedRecords = loadStoredRecords();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRecords(loadedRecords);
 
     const savedUserId = localStorage.getItem(USER_SESSION_KEY);
