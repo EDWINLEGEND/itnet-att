@@ -12,25 +12,30 @@ import {
   getDay,
   subDays,
 } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   CheckCircle2,
   Clock,
   Calendar,
-  Sparkles,
-  TrendingUp,
-  AlertCircle,
-  Briefcase,
   History,
-  Info,
 } from "lucide-react";
-import confetti from "canvas-confetti";
 
 interface EmployeeDashboardProps {
   user: User;
 }
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
-  const { records, markAttendance, calculateUserStats } = useAttendance();
+  const { records, markAttendance } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [tableFilter, setTableFilter] = useState<string>("all");
@@ -41,21 +46,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const isSundayToday = dayOfWeek === 0;
 
   const todayRecord = records[`${user.id}_${todayStr}`];
-  const stats = useMemo(() => calculateUserStats(user.id, 90), [user.id, calculateUserStats, records]);
 
   const handleQuickMarkToday = (shiftType: ShiftType) => {
     markAttendance(user.id, todayStr, shiftType);
-    if (shiftType !== "leave") {
-      try {
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.7 },
-        });
-      } catch {
-        // silent
-      }
-    }
   };
 
   const handleCellClick = (day: DayAttendance) => {
@@ -63,7 +56,6 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
     setIsModalOpen(true);
   };
 
-  // Build 30-day recent logs
   const recentLogs = useMemo(() => {
     const list: DayAttendance[] = [];
     for (let i = 0; i < 30; i++) {
@@ -102,153 +94,137 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Top Welcome / Today's Punch Card */}
-      <div className="bg-gradient-to-r from-emerald-900/20 via-teal-900/10 to-zinc-900/20 border border-emerald-500/30 dark:border-emerald-500/20 rounded-2xl p-6 shadow-sm relative overflow-hidden">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-500/30">
-                Employee Workspace
-              </span>
-              <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                {user.designation}
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
-              Hello, {user.name} 👋
-            </h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>
-                Today is <strong className="text-zinc-900 dark:text-white">{format(today, "EEEE, MMMM d, yyyy")}</strong>
-              </span>
-            </p>
-          </div>
+      {/* Top Banner: Enterprise Card */}
+      <Card className="border-border">
+        <CardContent className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+            {/* Employee Profile Information */}
+            <div className="lg:col-span-7 space-y-2">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="font-normal text-muted-foreground">
+                  Employee Dashboard
+                </Badge>
+                <span className="text-xs text-muted-foreground">{user.designation}</span>
+              </div>
 
-          {/* Today's Shift Status Card */}
-          <div className="bg-white/80 dark:bg-zinc-900/90 backdrop-blur-md p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm min-w-[320px]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                Today&apos;s Status
-              </span>
-              {todayRecord ? (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Clocked In
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                {user.name}
+              </h1>
+
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Calendar className="w-3.5 h-3.5" />
+                <span>
+                  {format(today, "EEEE, MMMM d, yyyy")} &bull; Schedule:{" "}
+                  <span className="font-medium text-foreground">Mon&ndash;Sat, 10:00 &ndash; 18:00</span>
                 </span>
-              ) : isSundayToday ? (
-                <span className="text-xs text-zinc-400">Sunday Off</span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 dark:text-amber-400">
-                  <Clock className="w-3.5 h-3.5" /> Pending Log
-                </span>
-              )}
+              </div>
             </div>
 
-            {/* Current status display */}
-            <div className="mb-3">
+            {/* Today's Punch Card */}
+            <div className="lg:col-span-5 p-4 rounded-lg border border-border/80 bg-muted/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Today&apos;s Status
+                </span>
+                {todayRecord ? (
+                  <Badge variant="emerald" className="gap-1 text-[11px]">
+                    <CheckCircle2 className="w-3 h-3" /> Logged
+                  </Badge>
+                ) : isSundayToday ? (
+                  <Badge variant="secondary" className="text-[11px]">
+                    Sunday Off
+                  </Badge>
+                ) : (
+                  <Badge variant="amber" className="gap-1 text-[11px]">
+                    <Clock className="w-3 h-3" /> Pending
+                  </Badge>
+                )}
+              </div>
+
               {todayRecord ? (
-                <div className="flex items-center gap-3">
-                  {/* Status Preview Box */}
+                <div className="flex items-center gap-3 p-2.5 rounded-md bg-background border border-border">
                   {todayRecord.shiftType === "full" && (
-                    <div className="w-7 h-7 rounded-md bg-emerald-500 border border-emerald-600" />
+                    <div className="w-6 h-6 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10 shrink-0" />
                   )}
                   {todayRecord.shiftType === "half_morning" && (
-                    <div className="w-7 h-7 rounded-md border border-zinc-400 overflow-hidden relative flex">
-                      <div className="w-1/2 h-full bg-emerald-500" />
+                    <div className="w-6 h-6 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex shrink-0">
+                      <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
                       <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
                     </div>
                   )}
                   {todayRecord.shiftType === "half_afternoon" && (
-                    <div className="w-7 h-7 rounded-md border border-zinc-400 overflow-hidden relative flex">
+                    <div className="w-6 h-6 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex shrink-0">
                       <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
-                      <div className="w-1/2 h-full bg-emerald-500" />
+                      <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
                     </div>
                   )}
                   {todayRecord.shiftType === "leave" && (
-                    <div className="w-7 h-7 rounded-md border-2 border-rose-400 bg-transparent" />
+                    <div className="w-6 h-6 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
                   )}
 
                   <div>
-                    <div className="text-sm font-bold text-zinc-900 dark:text-white">
+                    <div className="text-xs font-semibold text-foreground">
                       {SHIFT_CONFIGS[todayRecord.shiftType].label}
                     </div>
-                    <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    <div className="text-[11px] text-muted-foreground font-mono">
                       {SHIFT_CONFIGS[todayRecord.shiftType].timeRange}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                  Mark your shift for today (10:00 AM – 6:00 PM)
+                <div className="text-xs text-muted-foreground">
+                  Select a shift to mark your attendance for today:
                 </div>
               )}
-            </div>
 
-            {/* 1-Click Quick Action Buttons */}
-            <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-              <button
-                type="button"
-                onClick={() => handleQuickMarkToday("full")}
-                className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  todayRecord?.shiftType === "full"
-                    ? "bg-emerald-600 text-white shadow-xs"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-emerald-500/20"
-                }`}
-              >
-                <div className="w-3 h-3 rounded-[2px] bg-emerald-500 border border-emerald-600" />
-                <span>Full Shift (10-6)</span>
-              </button>
+              {/* Punch Buttons */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 pt-1">
+                <Button
+                  variant={todayRecord?.shiftType === "full" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuickMarkToday("full")}
+                  className="h-auto py-2 flex flex-col gap-0.5"
+                >
+                  <span className="font-semibold text-xs">Full</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">10&ndash;18 (8h)</span>
+                </Button>
 
-              <button
-                type="button"
-                onClick={() => handleQuickMarkToday("half_morning")}
-                className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  todayRecord?.shiftType === "half_morning"
-                    ? "bg-amber-600 text-white shadow-xs"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-amber-500/20"
-                }`}
-              >
-                <div className="w-3 h-3 rounded-[2px] border border-zinc-400 overflow-hidden flex">
-                  <div className="w-1/2 h-full bg-emerald-500" />
-                  <div className="w-1/2 h-full bg-zinc-300 dark:bg-zinc-700" />
-                </div>
-                <span>Morning (10-2)</span>
-              </button>
+                <Button
+                  variant={todayRecord?.shiftType === "half_morning" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuickMarkToday("half_morning")}
+                  className="h-auto py-2 flex flex-col gap-0.5"
+                >
+                  <span className="font-semibold text-xs">Morning</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">10&ndash;14 (4h)</span>
+                </Button>
 
-              <button
-                type="button"
-                onClick={() => handleQuickMarkToday("half_afternoon")}
-                className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  todayRecord?.shiftType === "half_afternoon"
-                    ? "bg-cyan-600 text-white shadow-xs"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-cyan-500/20"
-                }`}
-              >
-                <div className="w-3 h-3 rounded-[2px] border border-zinc-400 overflow-hidden flex">
-                  <div className="w-1/2 h-full bg-zinc-300 dark:bg-zinc-700" />
-                  <div className="w-1/2 h-full bg-emerald-500" />
-                </div>
-                <span>Afternoon (2-6)</span>
-              </button>
+                <Button
+                  variant={todayRecord?.shiftType === "half_afternoon" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuickMarkToday("half_afternoon")}
+                  className="h-auto py-2 flex flex-col gap-0.5"
+                >
+                  <span className="font-semibold text-xs">Afternoon</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">14&ndash;18 (4h)</span>
+                </Button>
 
-              <button
-                type="button"
-                onClick={() => handleQuickMarkToday("leave")}
-                className={`px-2.5 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-                  todayRecord?.shiftType === "leave"
-                    ? "bg-rose-600 text-white shadow-xs"
-                    : "bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 hover:bg-rose-500/20"
-                }`}
-              >
-                <div className="w-3 h-3 rounded-[2px] border-2 border-rose-400 bg-transparent" />
-                <span>On Leave</span>
-              </button>
+                <Button
+                  variant={todayRecord?.shiftType === "leave" ? "destructive" : "outline"}
+                  size="sm"
+                  onClick={() => handleQuickMarkToday("leave")}
+                  className="h-auto py-2 flex flex-col gap-0.5"
+                >
+                  <span className="font-semibold text-xs">Leave</span>
+                  <span className="text-[10px] text-muted-foreground font-mono">0h</span>
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Primary GitHub Commits Heatmap View */}
+      {/* Primary GitHub Commits Heatmap */}
       <AttendanceHeatmap
         user={user}
         onSelectDay={handleCellClick}
@@ -258,161 +234,153 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         showStats={true}
       />
 
-      {/* Recent Attendance History Table */}
-      <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-3 border-b border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <History className="w-4 h-4 text-zinc-500" />
-            <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
-              Recent Attendance Log (Past 30 Days)
-            </h3>
-          </div>
+      {/* Recent History Table */}
+      <Card className="border-border">
+        <CardHeader className="p-4 sm:p-6 pb-4 border-b border-border/60">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <History className="w-4 h-4 text-muted-foreground" />
+              <CardTitle className="text-sm sm:text-base font-semibold">
+                Recent Attendance Log (Past 30 Days)
+              </CardTitle>
+            </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800/80 p-1 rounded-lg text-xs">
-            <button
-              onClick={() => setTableFilter("all")}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                tableFilter === "all"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setTableFilter("full")}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                tableFilter === "full"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              Full Shifts
-            </button>
-            <button
-              onClick={() => setTableFilter("half")}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                tableFilter === "half"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              Half Shifts
-            </button>
-            <button
-              onClick={() => setTableFilter("leave")}
-              className={`px-2.5 py-1 rounded-md transition-all ${
-                tableFilter === "leave"
-                  ? "bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-semibold shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-              }`}
-            >
-              Leaves
-            </button>
+            {/* Filter Pills */}
+            <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg text-xs self-start sm:self-auto">
+              <Button
+                variant={tableFilter === "all" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setTableFilter("all")}
+                className="h-7 text-xs"
+              >
+                All
+              </Button>
+              <Button
+                variant={tableFilter === "full" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setTableFilter("full")}
+                className="h-7 text-xs"
+              >
+                Full
+              </Button>
+              <Button
+                variant={tableFilter === "half" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setTableFilter("half")}
+                className="h-7 text-xs"
+              >
+                Half
+              </Button>
+              <Button
+                variant={tableFilter === "leave" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setTableFilter("leave")}
+                className="h-7 text-xs"
+              >
+                Leaves
+              </Button>
+            </div>
           </div>
-        </div>
+        </CardHeader>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-zinc-100 dark:border-zinc-800 text-zinc-400 uppercase tracking-wider font-semibold">
-                <th className="pb-2.5 pl-2">Date</th>
-                <th className="pb-2.5">Day</th>
-                <th className="pb-2.5">Visual Box</th>
-                <th className="pb-2.5">Shift Type</th>
-                <th className="pb-2.5">Working Hours</th>
-                <th className="pb-2.5">Notes</th>
-                <th className="pb-2.5 text-right pr-2">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="pl-6">Date</TableHead>
+                <TableHead>Day</TableHead>
+                <TableHead>Box</TableHead>
+                <TableHead>Shift</TableHead>
+                <TableHead>Hours</TableHead>
+                <TableHead>Notes</TableHead>
+                <TableHead className="text-right pr-6">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {recentLogs.map((day) => {
                 const shiftType = day.record?.shiftType;
                 const config = shiftType ? SHIFT_CONFIGS[shiftType] : null;
 
                 return (
-                  <tr
-                    key={day.date}
-                    className="hover:bg-zinc-50/80 dark:hover:bg-zinc-800/40 transition-colors"
-                  >
-                    <td className="py-2.5 pl-2 font-medium text-zinc-900 dark:text-white">
+                  <TableRow key={day.date}>
+                    <TableCell className="pl-6 font-medium text-foreground whitespace-nowrap">
                       {format(day.dateObj, "MMM dd, yyyy")}
                       {day.isToday && (
-                        <span className="ml-1.5 text-[10px] px-1.5 py-0.2 rounded bg-blue-500/15 text-blue-500 font-bold">
+                        <Badge variant="outline" className="ml-2 text-[10px] text-blue-500 border-blue-500/30">
                           Today
-                        </span>
+                        </Badge>
                       )}
-                    </td>
-                    <td className="py-2.5 text-zinc-500 dark:text-zinc-400">
-                      {format(day.dateObj, "EEEE")}
-                    </td>
+                    </TableCell>
 
-                    {/* Visual Box Cell */}
-                    <td className="py-2.5">
+                    <TableCell className="text-muted-foreground whitespace-nowrap">
+                      {format(day.dateObj, "EEEE")}
+                    </TableCell>
+
+                    <TableCell>
                       {day.isSunday ? (
-                        <div className="w-5 h-5 rounded-[3px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800" />
+                        <div className="w-4 h-4 rounded-[2px] bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800" />
                       ) : shiftType === "full" ? (
-                        <div className="w-5 h-5 rounded-[3px] bg-emerald-500 border border-emerald-600" />
+                        <div className="w-4 h-4 rounded-[2px] bg-[#216e39] dark:bg-[#39d353] border border-black/10" />
                       ) : shiftType === "half_morning" ? (
-                        <div className="w-5 h-5 rounded-[3px] border border-zinc-400 overflow-hidden relative flex">
-                          <div className="w-1/2 h-full bg-emerald-500" />
+                        <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex">
+                          <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
                           <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
                         </div>
                       ) : shiftType === "half_afternoon" ? (
-                        <div className="w-5 h-5 rounded-[3px] border border-zinc-400 overflow-hidden relative flex">
+                        <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 overflow-hidden relative flex">
                           <div className="w-1/2 h-full bg-zinc-200 dark:bg-zinc-800" />
-                          <div className="w-1/2 h-full bg-emerald-500" />
+                          <div className="w-1/2 h-full bg-[#30a14e] dark:bg-[#26a641]" />
                         </div>
                       ) : (
-                        <div className="w-5 h-5 rounded-[3px] border-2 border-rose-400 bg-transparent" />
+                        <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent" />
                       )}
-                    </td>
+                    </TableCell>
 
-                    <td className="py-2.5">
+                    <TableCell className="whitespace-nowrap">
                       {day.isSunday ? (
-                        <span className="text-zinc-400 font-medium">Sunday (Non-Working)</span>
+                        <span className="text-muted-foreground">Sunday Off</span>
                       ) : config ? (
-                        <span
-                          className={`inline-flex items-center px-2 py-0.5 rounded-full font-medium text-[11px] border ${config.badgeClass}`}
+                        <Badge
+                          variant={
+                            config.type === "full"
+                              ? "emerald"
+                              : config.type === "leave"
+                              ? "destructive"
+                              : "secondary"
+                          }
                         >
-                          {config.label}
-                        </span>
+                          {config.shortLabel}
+                        </Badge>
                       ) : (
-                        <span className="text-rose-500 font-medium">On Leave / Absent</span>
+                        <Badge variant="destructive">On Leave</Badge>
                       )}
-                    </td>
+                    </TableCell>
 
-                    <td className="py-2.5 font-mono text-zinc-600 dark:text-zinc-400">
-                      {day.isSunday ? (
-                        <span className="text-zinc-400">&ndash;</span>
-                      ) : config ? (
-                        <span>{config.timeRange}</span>
-                      ) : (
-                        <span className="text-rose-400">0 hrs</span>
-                      )}
-                    </td>
+                    <TableCell className="font-mono text-muted-foreground whitespace-nowrap">
+                      {day.isSunday ? "\u2013" : config ? config.timeRange : "0h"}
+                    </TableCell>
 
-                    <td className="py-2.5 text-zinc-500 dark:text-zinc-400 max-w-[180px] truncate">
-                      {day.record?.notes || <span className="text-zinc-300 dark:text-zinc-600">&ndash;</span>}
-                    </td>
+                    <TableCell className="text-muted-foreground text-xs max-w-[180px] truncate">
+                      {day.record?.notes || <span className="text-muted-foreground/50">&ndash;</span>}
+                    </TableCell>
 
-                    <td className="py-2.5 text-right pr-2">
-                      <button
+                    <TableCell className="text-right pr-6 whitespace-nowrap">
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         onClick={() => handleCellClick(day)}
-                        className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium"
+                        className="h-7 px-2 text-xs"
                       >
                         Edit
-                      </button>
-                    </td>
-                  </tr>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Mark Attendance Modal */}
       <MarkAttendanceModal
