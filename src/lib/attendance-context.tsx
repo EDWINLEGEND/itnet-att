@@ -10,6 +10,7 @@ import {
   loadStoredHolidays,
   saveStoredHolidays,
   clearStoredHolidays,
+  ATTENDANCE_START_DATE,
 } from "./mock-data";
 import { format, subDays, addDays, getDay, isAfter, isBefore, startOfDay, parseISO } from "date-fns";
 
@@ -250,8 +251,14 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
       let currentStreak = 0;
       let streakBroken = false;
 
+      const startDate = parseISO(ATTENDANCE_START_DATE);
+
       for (let d = 0; d <= daysBack; d++) {
         const checkDate = subDays(today, d);
+
+        // Do not calculate prior to the company attendance tracking start date (Sep 7, 2026)
+        if (isBefore(checkDate, startDate)) break;
+
         const dateStr = format(checkDate, "yyyy-MM-dd");
         const dayOfWeek = getDay(checkDate); // 0 = Sun
 

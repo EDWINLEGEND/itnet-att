@@ -40,6 +40,7 @@ export interface DayAttendance {
   isToday: boolean;
   isHoliday?: boolean;
   holidayTitle?: string;
+  isPriorToStart?: boolean;
   record?: AttendanceRecord;
 }
 

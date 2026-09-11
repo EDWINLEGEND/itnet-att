@@ -17,7 +17,7 @@ interface HeatmapCellProps {
 }
 
 export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
-  const { date, dateObj, dayOfWeek, isSunday, isFuture, isToday, record, isHoliday, holidayTitle } = day;
+  const { date, dateObj, dayOfWeek, isSunday, isFuture, isToday, record, isHoliday, holidayTitle, isPriorToStart } = day;
   const shiftType = record?.shiftType;
 
   // Exact GitHub-style square dimensions
@@ -30,7 +30,11 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
   let cellInner: React.ReactNode = null;
   let cellClass = "relative outline-none cursor-pointer transition-all duration-75 select-none ";
 
-  if (isHoliday) {
+  if (isPriorToStart) {
+    // Prior to September 7 start date
+    cellClass +=
+      "bg-transparent border border-dashed border-zinc-200/50 dark:border-zinc-800/40 opacity-20 hover:opacity-60";
+  } else if (isHoliday) {
     // Official company holiday
     cellClass +=
       "bg-amber-400 dark:bg-amber-500 border border-amber-600/40 hover:brightness-110";
@@ -91,7 +95,9 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
           onClick={() => onClick && onClick(day)}
           className={`${dimensionClass} ${cellClass}`}
           aria-label={`${format(dateObj, "MMM d, yyyy")}: ${
-            isHoliday
+            isPriorToStart
+              ? "Prior to tracking start (Sep 7, 2026)"
+              : isHoliday
               ? `Holiday: ${holidayTitle || "Official Holiday"}`
               : shiftConfig?.label || (isSunday ? "Sunday Off" : "Leave")
           }`}
@@ -113,7 +119,9 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
         </div>
 
         <div className="space-y-0.5 text-zinc-300 text-[11px]">
-          {isHoliday ? (
+          {isPriorToStart ? (
+            <span className="text-zinc-500">Prior to tracking start (Sep 7, 2026)</span>
+          ) : isHoliday ? (
             <div>
               <div className="text-amber-400 font-semibold flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />

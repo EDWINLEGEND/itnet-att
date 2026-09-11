@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { User, DayAttendance, ShiftType } from "@/types/attendance";
 import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
@@ -12,7 +12,10 @@ import {
   startOfDay,
   getDay,
   subDays,
+  parseISO,
+  isBefore,
 } from "date-fns";
+import { ATTENDANCE_START_DATE } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,8 +52,27 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
     return getUpcomingLeaves(14).filter((l) => l.user.id === user.id);
   }, [getUpcomingLeaves, user.id]);
 
-  const handleQuickMarkToday = (shiftType: ShiftType) => {
-    markAttendance(user.id, todayStr, shiftType);
+  // Selection state for Today's shift (defaults to existing record or full shift)
+  const [selectedTodayShift, setSelectedTodayShift] = useState<ShiftType>(
+    todayRecord?.shiftType || "full"
+  );
+  const [isSavedRecently, setIsSavedRecently] = useState(false);
+
+  useEffect(() => {
+    if (todayRecord?.shiftType) {
+      setSelectedTodayShift(todayRecord.shiftType);
+    }
+  }, [todayRecord?.shiftType]);
+
+  const handleChooseShift = (shiftType: ShiftType) => {
+    setSelectedTodayShift(shiftType);
+    setIsSavedRecently(false);
+  };
+
+  const handleMarkTodayAttendance = () => {
+    markAttendance(user.id, todayStr, selectedTodayShift);
+    setIsSavedRecently(true);
+    setTimeout(() => setIsSavedRecently(false), 2500);
   };
 
   const handleCellClick = (day: DayAttendance) => {
@@ -60,8 +82,12 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
   const recentLogs = useMemo(() => {
     const list: DayAttendance[] = [];
+    const startDate = parseISO(ATTENDANCE_START_DATE);
+
     for (let i = 0; i < 30; i++) {
       const d = subDays(today, i);
+      if (isBefore(d, startDate)) break;
+
       const dStr = format(d, "yyyy-MM-dd");
       const dOfWeek = getDay(d);
       const isSun = dOfWeek === 0;
@@ -155,7 +181,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                 Today&apos;s Attendance
               </h2>
               <p className="text-xs text-muted-foreground">
-                Tap any option below to log or update your shift for today
+                Select your shift below, then click &ldquo;Mark Attendance&rdquo; to save
               </p>
             </div>
 
@@ -178,14 +204,14 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             )}
           </div>
 
-          {/* 4 Big 1-Tap Buttons */}
+          {/* 4 Shift Choice Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {/* Full Day */}
             <button
               type="button"
-              onClick={() => handleQuickMarkToday("full")}
+              onClick={() => handleChooseShift("full")}
               className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
-                todayRecord?.shiftType === "full"
+                selectedTodayShift === "full"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
                   : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
               }`}
@@ -199,7 +225,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               <div>
                 <div className="font-semibold text-sm text-foreground flex items-center justify-between">
                   <span>Full Shift</span>
-                  {todayRecord?.shiftType === "full" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                  {selectedTodayShift === "full" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 18:00
@@ -210,9 +236,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             {/* Morning Half */}
             <button
               type="button"
-              onClick={() => handleQuickMarkToday("half_morning")}
+              onClick={() => handleChooseShift("half_morning")}
               className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
-                todayRecord?.shiftType === "half_morning"
+                selectedTodayShift === "half_morning"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
                   : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
               }`}
@@ -229,7 +255,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               <div>
                 <div className="font-semibold text-sm text-foreground flex items-center justify-between">
                   <span>Morning</span>
-                  {todayRecord?.shiftType === "half_morning" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                  {selectedTodayShift === "half_morning" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 14:00
@@ -240,9 +266,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             {/* Afternoon Half */}
             <button
               type="button"
-              onClick={() => handleQuickMarkToday("half_afternoon")}
+              onClick={() => handleChooseShift("half_afternoon")}
               className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
-                todayRecord?.shiftType === "half_afternoon"
+                selectedTodayShift === "half_afternoon"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
                   : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
               }`}
@@ -259,7 +285,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               <div>
                 <div className="font-semibold text-sm text-foreground flex items-center justify-between">
                   <span>Afternoon</span>
-                  {todayRecord?.shiftType === "half_afternoon" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                  {selectedTodayShift === "half_afternoon" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   14:00 &ndash; 18:00
@@ -270,9 +296,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             {/* Leave */}
             <button
               type="button"
-              onClick={() => handleQuickMarkToday("leave")}
+              onClick={() => handleChooseShift("leave")}
               className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
-                todayRecord?.shiftType === "leave"
+                selectedTodayShift === "leave"
                   ? "border-rose-500 bg-rose-500/10 dark:bg-rose-950/30 ring-2 ring-rose-500/80 shadow-xs"
                   : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
               }`}
@@ -286,13 +312,39 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               <div>
                 <div className="font-semibold text-sm text-foreground flex items-center justify-between">
                   <span>Leave</span>
-                  {todayRecord?.shiftType === "leave" && <CheckCircle2 className="w-4 h-4 text-rose-500" />}
+                  {selectedTodayShift === "leave" && <CheckCircle2 className="w-4 h-4 text-rose-500" />}
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   Not scheduled
                 </div>
               </div>
             </button>
+          </div>
+
+          {/* Action Footer: Mark Attendance Button */}
+          <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="text-xs text-muted-foreground flex items-center gap-2">
+              <span>Selected:</span>
+              <span className="font-semibold text-foreground">
+                {SHIFT_CONFIGS[selectedTodayShift].label}
+              </span>
+              <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[11px]">
+                ({SHIFT_CONFIGS[selectedTodayShift].timeRange})
+              </span>
+            </div>
+
+            <Button
+              type="button"
+              onClick={handleMarkTodayAttendance}
+              className={`h-10 px-6 font-semibold text-xs sm:text-sm gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] ${
+                isSavedRecently
+                  ? "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600"
+                  : "bg-black hover:bg-zinc-900 text-white border border-black dark:border-zinc-800"
+              }`}
+            >
+              <CheckCircle2 className={`w-4 h-4 ${isSavedRecently ? "text-white" : "text-emerald-400"}`} />
+              <span>{isSavedRecently ? "Attendance Saved!" : "Mark Attendance"}</span>
+            </Button>
           </div>
         </CardContent>
       </Card>

@@ -12,14 +12,8 @@ import {
 } from "date-fns";
 
 export const ATTENDANCE_START_DATE = "2026-09-07";
-const STORAGE_KEY = "itnetai_attendance_records_v3";
-const HOLIDAYS_STORAGE_KEY = "itnetai_official_holidays_v1";
-
-// Simple pseudo-random deterministic generator for consistent demo data
-function pseudoRandom(seed: number) {
-  const x = Math.sin(seed++) * 10000;
-  return x - Math.floor(x);
-}
+const STORAGE_KEY = "itnetai_attendance_records_v4";
+const HOLIDAYS_STORAGE_KEY = "itnetai_official_holidays_v2";
 
 export function generateSeedRecords(): Record<string, AttendanceRecord> {
   const records: Record<string, AttendanceRecord> = {};
@@ -29,7 +23,7 @@ export function generateSeedRecords(): Record<string, AttendanceRecord> {
 
   const totalDays = Math.max(0, differenceInDays(today, startDate));
 
-  // Generate records strictly from September 7th up to today
+  // Initialize records strictly from September 7th up to today as Leave
   for (let d = 0; d <= totalDays; d++) {
     const currentDate = addDays(startDate, d);
     const dateStr = format(currentDate, "yyyy-MM-dd");
@@ -41,41 +35,13 @@ export function generateSeedRecords(): Record<string, AttendanceRecord> {
     // For future dates beyond today, do not generate
     if (isAfter(currentDate, today)) continue;
 
-    employees.forEach((emp, empIndex) => {
-      const seed = (d + 1) * 23 + empIndex * 149;
-      const rand = pseudoRandom(seed);
-
-      let shiftType: ShiftType;
-      let checkInTime: string | undefined;
-      let checkOutTime: string | undefined;
-      let notes: string | undefined;
-
-      // Clean distribution for workdays from Sep 7:
-      if (rand < 0.85) {
-        shiftType = "full";
-        checkInTime = "09:55 AM";
-        checkOutTime = "06:05 PM";
-      } else if (rand < 0.93) {
-        shiftType = "half_morning";
-        checkInTime = "09:58 AM";
-        checkOutTime = "02:00 PM";
-        notes = "Morning shift completed";
-      } else {
-        shiftType = "half_afternoon";
-        checkInTime = "01:55 PM";
-        checkOutTime = "06:00 PM";
-        notes = "Afternoon shift completed";
-      }
-
+    employees.forEach((emp) => {
       const key = `${emp.id}_${dateStr}`;
       records[key] = {
         id: `rec-${emp.id}-${dateStr}`,
         userId: emp.id,
         date: dateStr,
-        shiftType,
-        checkInTime,
-        checkOutTime,
-        notes,
+        shiftType: "leave",
         updatedAt: new Date().toISOString(),
       };
     });
@@ -91,9 +57,9 @@ export function loadStoredRecords(): Record<string, AttendanceRecord> {
 
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (parsed && Object.keys(parsed).length > 0) {
+      if (parsed && typeof parsed === "object") {
         return parsed;
       }
     }

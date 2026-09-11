@@ -11,9 +11,12 @@ import {
   addDays,
   isSameDay,
   isAfter,
+  isBefore,
+  parseISO,
   startOfDay,
   getDay,
 } from "date-fns";
+import { ATTENDANCE_START_DATE } from "@/lib/mock-data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +80,7 @@ export function AttendanceHeatmap({
         const isWorkDay = !isSunday && !isHoliday;
         const isFuture = isAfter(dateObj, today);
         const isToday = isSameDay(dateObj, today);
+        const isPriorToStart = isBefore(dateObj, parseISO(ATTENDANCE_START_DATE));
 
         const rec = records[`${user.id}_${dateStr}`];
 
@@ -90,6 +94,7 @@ export function AttendanceHeatmap({
           isToday,
           isHoliday,
           holidayTitle: holiday?.title,
+          isPriorToStart,
           record: rec,
         });
       }
