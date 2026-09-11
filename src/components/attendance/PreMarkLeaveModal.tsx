@@ -142,7 +142,7 @@ export function PreMarkLeaveModal({
                   .filter((u) => u.role === "employee")
                   .map((u) => (
                     <option key={u.id} value={u.id}>
-                      {u.name} ({u.designation})
+                      {u.name}
                     </option>
                   ))}
               </select>

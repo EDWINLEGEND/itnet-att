@@ -195,7 +195,7 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
       Object.values(records).forEach((rec) => {
         if (rec.shiftType === "leave") {
           const recDate = parseISO(rec.date);
-          if (!isBefore(recDate, today) && !isAfter(recDate, maxDate)) {
+          if (isAfter(recDate, today) && !isAfter(recDate, maxDate)) {
             const u = USERS.find((user) => user.id === rec.userId);
             if (u) {
               results.push({

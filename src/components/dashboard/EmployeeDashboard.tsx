@@ -129,24 +129,18 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
-      {/* Top Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+      {/* Top Welcome Header - Sleek & Spaced */}
+      <div className="flex items-center justify-between gap-3 pt-1">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              {user.name}
-            </h1>
-            <Badge variant="outline" className="font-normal text-xs text-muted-foreground">
-              {user.designation}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-0.5">
-            <Calendar className="w-3.5 h-3.5" />
-            <span>{format(today, "EEEE, MMMM d, yyyy")}</span>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            {user.name}
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {format(today, "EEEE, MMMM d, yyyy")}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             variant="outline"
             size="sm"
@@ -154,78 +148,86 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               setSelectedDay(null);
               setIsModalOpen(true);
             }}
-            className="h-8 gap-1.5 text-xs cursor-pointer"
+            className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-lg"
           >
             <Calendar className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Edit Past Day</span>
+            <span>Past Day</span>
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={() => setIsPreMarkOpen(true)}
-            className="h-8 gap-1.5 text-xs cursor-pointer"
+            className="h-8 px-2.5 sm:px-3 text-xs gap-1.5 cursor-pointer rounded-lg"
           >
             <Plane className="w-3.5 h-3.5 text-rose-500" />
-            <span>Pre-Mark Leave</span>
+            <span>Leave</span>
           </Button>
         </div>
       </div>
 
-      {/* Hero: Today's 1-Tap Attendance */}
+      {/* Hero: Today's Shift Card - Airy, Clean & Decluttered */}
       <Card className="border-border shadow-xs">
-        <CardContent className="p-4 sm:p-6 space-y-4">
+        <CardContent className="p-4 sm:p-5 space-y-3.5">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-semibold text-foreground">
-                Today&apos;s Attendance
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Select your shift below, then click &ldquo;Mark Attendance&rdquo; to save
-              </p>
-            </div>
+            <h2 className="text-sm sm:text-base font-semibold text-foreground">
+              Today
+            </h2>
 
             {todayHoliday ? (
-              <Badge variant="amber" className="gap-1 text-xs py-1 px-2.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Holiday: {todayHoliday.title}
+              <Badge variant="amber" className="gap-1 text-xs py-0.5 px-2">
+                <Sparkles className="w-3 h-3 text-amber-500" /> Holiday: {todayHoliday.title}
               </Badge>
             ) : todayRecord ? (
-              <Badge variant="emerald" className="gap-1 text-xs py-1 px-2.5">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Logged: {SHIFT_CONFIGS[todayRecord.shiftType].label}
+              <Badge
+                variant={todayRecord.shiftType === "leave" ? "destructive" : "emerald"}
+                className="gap-1 text-xs py-0.5 px-2 font-medium"
+              >
+                <CheckCircle2 className="w-3 h-3" />
+                <span>
+                  {todayRecord.shiftType === "full"
+                    ? "Full Day"
+                    : todayRecord.shiftType === "half_morning"
+                    ? "Morning"
+                    : todayRecord.shiftType === "half_afternoon"
+                    ? "Afternoon"
+                    : "Leave"}
+                </span>
               </Badge>
             ) : isSundayToday ? (
-              <Badge variant="secondary" className="text-xs py-1 px-2.5">
+              <Badge variant="secondary" className="text-xs py-0.5 px-2">
                 Sunday Off
               </Badge>
             ) : (
-              <Badge variant="amber" className="gap-1 text-xs py-1 px-2.5">
-                <Clock className="w-3.5 h-3.5" /> Pending
+              <Badge variant="amber" className="gap-1 text-xs py-0.5 px-2">
+                <Clock className="w-3 h-3" /> Pending
               </Badge>
             )}
           </div>
 
-          {/* 4 Shift Choice Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {/* 4 Shift Choice Cards - Clean & Breathable */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             {/* Full Day */}
             <button
               type="button"
               onClick={() => handleChooseShift("full")}
-              className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
                 selectedTodayShift === "full"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
+                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-5 h-5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
-                <Badge variant="outline" className="text-[10px] font-mono py-0">
-                  8h
-                </Badge>
+                <div className="w-4 h-4 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950] border border-black/10 shrink-0" />
+                {selectedTodayShift === "full" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <span className="text-[11px] font-mono text-muted-foreground">8h</span>
+                )}
               </div>
               <div>
-                <div className="font-semibold text-sm text-foreground flex items-center justify-between">
-                  <span>Full Shift</span>
-                  {selectedTodayShift === "full" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                <div className="font-semibold text-xs sm:text-sm text-foreground">
+                  Full Day
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 18:00
@@ -237,25 +239,26 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_morning")}
-              className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
                 selectedTodayShift === "half_morning"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
+                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
+                <div className="w-4 h-4 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
                   <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                   <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono py-0">
-                  4h
-                </Badge>
+                {selectedTodayShift === "half_morning" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <span className="text-[11px] font-mono text-muted-foreground">4h</span>
+                )}
               </div>
               <div>
-                <div className="font-semibold text-sm text-foreground flex items-center justify-between">
-                  <span>Morning</span>
-                  {selectedTodayShift === "half_morning" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                <div className="font-semibold text-xs sm:text-sm text-foreground">
+                  Morning
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   10:00 &ndash; 14:00
@@ -267,25 +270,26 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("half_afternoon")}
-              className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
                 selectedTodayShift === "half_afternoon"
                   ? "border-emerald-600 bg-emerald-500/10 dark:bg-emerald-950/30 ring-2 ring-emerald-600/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
+                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-5 h-5 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
+                <div className="w-4 h-4 rounded-[2px] border border-zinc-300 dark:border-zinc-700 overflow-hidden relative flex shrink-0">
                   <div className="w-1/2 h-full bg-zinc-100 dark:bg-zinc-800" />
                   <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono py-0">
-                  4h
-                </Badge>
+                {selectedTodayShift === "half_afternoon" ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                ) : (
+                  <span className="text-[11px] font-mono text-muted-foreground">4h</span>
+                )}
               </div>
               <div>
-                <div className="font-semibold text-sm text-foreground flex items-center justify-between">
-                  <span>Afternoon</span>
-                  {selectedTodayShift === "half_afternoon" && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                <div className="font-semibold text-xs sm:text-sm text-foreground">
+                  Afternoon
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
                   14:00 &ndash; 18:00
@@ -297,46 +301,37 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
             <button
               type="button"
               onClick={() => handleChooseShift("leave")}
-              className={`p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
+              className={`p-3 sm:p-3.5 rounded-xl border text-left transition-all duration-150 cursor-pointer flex flex-col justify-between gap-3 ${
                 selectedTodayShift === "leave"
                   ? "border-rose-500 bg-rose-500/10 dark:bg-rose-950/30 ring-2 ring-rose-500/80 shadow-xs"
-                  : "border-border bg-card hover:border-foreground/40 hover:bg-muted/40"
+                  : "border-border bg-card hover:border-foreground/30 hover:bg-muted/30"
               }`}
             >
               <div className="flex items-center justify-between">
-                <div className="w-5 h-5 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
-                <Badge variant="destructive" className="text-[10px] font-mono py-0">
-                  0h
-                </Badge>
+                <div className="w-4 h-4 rounded-[2px] border border-zinc-400 dark:border-zinc-600 bg-transparent shrink-0" />
+                {selectedTodayShift === "leave" ? (
+                  <CheckCircle2 className="w-4 h-4 text-rose-500 shrink-0" />
+                ) : (
+                  <span className="text-[11px] font-mono text-muted-foreground">0h</span>
+                )}
               </div>
               <div>
-                <div className="font-semibold text-sm text-foreground flex items-center justify-between">
-                  <span>Leave</span>
-                  {selectedTodayShift === "leave" && <CheckCircle2 className="w-4 h-4 text-rose-500" />}
+                <div className="font-semibold text-xs sm:text-sm text-foreground">
+                  Leave
                 </div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  Not scheduled
+                  Off Duty
                 </div>
               </div>
             </button>
           </div>
 
-          {/* Action Footer: Mark Attendance Button */}
-          <div className="pt-3 border-t border-border/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground flex items-center gap-2">
-              <span>Selected:</span>
-              <span className="font-semibold text-foreground">
-                {SHIFT_CONFIGS[selectedTodayShift].label}
-              </span>
-              <span className="font-mono text-emerald-600 dark:text-emerald-400 text-[11px]">
-                ({SHIFT_CONFIGS[selectedTodayShift].timeRange})
-              </span>
-            </div>
-
+          {/* Action Footer: Sleek Full-Width Black Save Button */}
+          <div className="pt-2">
             <Button
               type="button"
               onClick={handleMarkTodayAttendance}
-              className={`h-10 px-6 font-semibold text-xs sm:text-sm gap-2 transition-all cursor-pointer shadow-sm active:scale-[0.98] ${
+              className={`w-full h-11 font-medium text-xs sm:text-sm rounded-xl gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.99] ${
                 isSavedRecently
                   ? "bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600"
                   : "bg-black hover:bg-zinc-900 text-white border border-black dark:border-zinc-800"
@@ -351,14 +346,13 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
 
       {/* Upcoming Planned Leaves Alert */}
       {upcomingLeaves.length > 0 && (
-        <div className="p-3.5 rounded-xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="p-3 sm:p-3.5 rounded-xl border border-rose-200/80 dark:border-rose-900/40 bg-rose-50/40 dark:bg-rose-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <Plane className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
-              <span className="font-semibold text-foreground">Upcoming Planned Leaves:</span>
-              <span className="text-[11px] text-muted-foreground">(Tap to edit or cancel)</span>
+            <div className="flex items-center gap-1.5 font-medium text-foreground">
+              <Plane className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <span>Upcoming Leaves</span>
             </div>
-            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
               {upcomingLeaves.map((l) => (
                 <span
                   key={l.record.id}

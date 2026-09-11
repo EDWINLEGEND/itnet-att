@@ -297,9 +297,6 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {emp.designation}
-                      </div>
                     </div>
                   </div>
 
@@ -456,7 +453,6 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                         </Avatar>
                         <div>
                           <div className="font-semibold text-foreground text-xs">{user.name}</div>
-                          <div className="text-[11px] text-muted-foreground">{user.designation}</div>
                         </div>
                       </div>
                     </TableCell>
