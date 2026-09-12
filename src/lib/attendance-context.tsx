@@ -1,7 +1,13 @@
-"use client";
-
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { User, AttendanceRecord, ShiftType, UserAttendanceStats, OfficialHoliday } from "@/types/attendance";
+import {
+  User,
+  AttendanceRecord,
+  ShiftType,
+  UserAttendanceStats,
+  OfficialHoliday,
+  WorkLocation,
+  TeamMemberDayPresence,
+} from "@/types/attendance";
 import { USERS } from "./constants";
 import {
   loadStoredRecords,
@@ -25,8 +31,35 @@ interface AttendanceContextType {
   login: (email: string, pass: string) => boolean;
   quickLogin: (userId: string) => void;
   logout: () => void;
-  markAttendance: (userId: string, date: string, shiftType: ShiftType, notes?: string) => void;
+  markAttendance: (
+    userId: string,
+    date: string,
+    shiftType: ShiftType,
+    notes?: string,
+    workLocation?: WorkLocation
+  ) => void;
   preMarkLeave: (userId: string, startDate: string, endDate?: string, reason?: string) => void;
+  preMarkSchedule: (
+    userId: string,
+    startDate: string,
+    endDate?: string,
+    shiftType?: ShiftType,
+    workLocation?: WorkLocation,
+    reason?: string
+  ) => void;
+  getTeamStatusForDate: (dateStr: string) => TeamMemberDayPresence[];
+  getTeamWeekStatus: (referenceDate?: Date) => {
+    date: string;
+    dateObj: Date;
+    dayName: string;
+    dayNum: string;
+    formattedDate: string;
+    isSunday: boolean;
+    isToday: boolean;
+    isHoliday?: boolean;
+    holidayTitle?: string;
+    members: TeamMemberDayPresence[];
+  }[];
   deleteAttendance: (userId: string, date: string) => void;
   getRecord: (userId: string, date: string) => AttendanceRecord | undefined;
   getUpcomingLeaves: (daysAhead?: number) => { record: AttendanceRecord; user: User; dateObj: Date }[];
@@ -97,7 +130,13 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
   }, []);
 
   const markAttendance = useCallback(
-    (userId: string, date: string, shiftType: ShiftType, notes?: string) => {
+    (
+      userId: string,
+      date: string,
+      shiftType: ShiftType,
+      notes?: string,
+      workLocation?: WorkLocation
+    ) => {
       setRecords((prev) => {
         const key = `${userId}_${date}`;
         let checkInTime: string | undefined;
@@ -114,11 +153,17 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
           checkOutTime = "06:00 PM";
         }
 
+        const resolvedLocation: WorkLocation | undefined =
+          shiftType === "leave"
+            ? undefined
+            : workLocation || prev[key]?.workLocation || "office";
+
         const newRecord: AttendanceRecord = {
           id: prev[key]?.id || `rec-${userId}-${date}`,
           userId,
           date,
           shiftType,
+          workLocation: resolvedLocation,
           checkInTime,
           checkOutTime,
           notes: notes !== undefined ? notes : prev[key]?.notes,
@@ -137,13 +182,27 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
     []
   );
 
-  const preMarkLeave = useCallback(
-    (userId: string, startDate: string, endDate?: string, reason?: string) => {
+  const preMarkSchedule = useCallback(
+    (
+      userId: string,
+      startDate: string,
+      endDate?: string,
+      shiftType: ShiftType = "leave",
+      workLocation: WorkLocation = "remote",
+      reason?: string
+    ) => {
       setRecords((prev) => {
         const next = { ...prev };
         const start = parseISO(startDate);
         const end = endDate ? parseISO(endDate) : start;
-        const noteText = reason?.trim() ? `Planned Leave: ${reason.trim()}` : "Planned Leave";
+        const isLeave = shiftType === "leave";
+        const defaultPrefix = isLeave
+          ? "Planned Leave"
+          : workLocation === "remote"
+          ? "Planned Online (WFH)"
+          : "Planned In-Office";
+
+        const noteText = reason?.trim() ? `${defaultPrefix}: ${reason.trim()}` : defaultPrefix;
 
         let cur = start;
         while (!isAfter(cur, end)) {
@@ -154,7 +213,8 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
               id: prev[key]?.id || `rec-${userId}-${dateStr}`,
               userId,
               date: dateStr,
-              shiftType: "leave",
+              shiftType,
+              workLocation: isLeave ? undefined : workLocation,
               notes: noteText,
               updatedAt: new Date().toISOString(),
             };
@@ -167,6 +227,13 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
       });
     },
     []
+  );
+
+  const preMarkLeave = useCallback(
+    (userId: string, startDate: string, endDate?: string, reason?: string) => {
+      preMarkSchedule(userId, startDate, endDate, "leave", undefined, reason);
+    },
+    [preMarkSchedule]
   );
 
   const deleteAttendance = useCallback((userId: string, date: string) => {
@@ -236,6 +303,75 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
   const isOfficialHoliday = useCallback((date: string) => {
     return holidays[date];
   }, [holidays]);
+
+  const getTeamStatusForDate = useCallback(
+    (dateStr: string): TeamMemberDayPresence[] => {
+      const employees = USERS.filter((u) => u.role === "employee");
+      let d: Date;
+      try {
+        d = parseISO(dateStr);
+      } catch {
+        d = startOfDay(new Date());
+      }
+      const isSun = getDay(d) === 0;
+      const holiday = isOfficialHoliday(dateStr);
+
+      return employees.map((emp) => {
+        const rec = records[`${emp.id}_${dateStr}`];
+        const isLeave = rec?.shiftType === "leave";
+        const isPending = !rec && !isSun && !holiday;
+
+        return {
+          user: emp,
+          record: rec,
+          shiftType: rec?.shiftType,
+          workLocation: rec?.workLocation,
+          isLeave,
+          isHoliday: !!holiday,
+          holidayTitle: holiday?.title,
+          isSunday: isSun,
+          isPending,
+        };
+      });
+    },
+    [records, isOfficialHoliday]
+  );
+
+  const getTeamWeekStatus = useCallback(
+    (referenceDate?: Date) => {
+      const base = referenceDate || startOfDay(new Date());
+      const dayOfWeek = getDay(base); // 0 is Sun, 1 is Mon...
+      const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      const monday = addDays(base, diffToMonday);
+
+      const weekDays = [];
+      const todayStr = format(startOfDay(new Date()), "yyyy-MM-dd");
+
+      for (let i = 0; i < 6; i++) {
+        const curDate = addDays(monday, i);
+        const curStr = format(curDate, "yyyy-MM-dd");
+        const isToday = curStr === todayStr;
+        const holiday = isOfficialHoliday(curStr);
+        const members = getTeamStatusForDate(curStr);
+
+        weekDays.push({
+          date: curStr,
+          dateObj: curDate,
+          dayName: format(curDate, "EEE"),
+          dayNum: format(curDate, "d"),
+          formattedDate: format(curDate, "MMM d"),
+          isSunday: false,
+          isToday,
+          isHoliday: !!holiday,
+          holidayTitle: holiday?.title,
+          members,
+        });
+      }
+
+      return weekDays;
+    },
+    [getTeamStatusForDate, isOfficialHoliday]
+  );
 
   const calculateUserStats = useCallback(
     (userId: string, daysBack = 120): UserAttendanceStats => {
@@ -338,6 +474,9 @@ export function AttendanceProvider({ children }: { children: React.ReactNode }) 
         logout,
         markAttendance,
         preMarkLeave,
+        preMarkSchedule,
+        getTeamStatusForDate,
+        getTeamWeekStatus,
         deleteAttendance,
         getRecord,
         getUpcomingLeaves,

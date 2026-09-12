@@ -120,7 +120,7 @@ export function AttendanceHeatmap({
                   <h3 className="font-semibold text-sm sm:text-base text-foreground tracking-tight flex items-center gap-2">
                     <span>{user.name} &mdash; Activity</span>
                     <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${userTheme.badge}`}>
-                      {userTheme.name}
+                      {user.designation}
                     </span>
                   </h3>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from "react";
-import { User, DayAttendance, ShiftType } from "@/types/attendance";
+import { User, DayAttendance, ShiftType, WorkLocation } from "@/types/attendance";
 import { AttendanceHeatmap } from "../heatmap/AttendanceHeatmap";
 import { MarkAttendanceModal } from "../attendance/MarkAttendanceModal";
 import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
@@ -26,6 +26,9 @@ import {
   History,
   Plane,
   Sparkles,
+  Building2,
+  Laptop,
+  Users,
 } from "lucide-react";
 
 interface EmployeeDashboardProps {
@@ -34,11 +37,20 @@ interface EmployeeDashboardProps {
 
 export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const theme = user.theme || USER_THEMES[user.id] || USER_THEMES["emp-shan"];
-  const { records, markAttendance, getUpcomingLeaves, deleteAttendance, isOfficialHoliday } = useAttendance();
+  const {
+    records,
+    markAttendance,
+    getUpcomingLeaves,
+    deleteAttendance,
+    isOfficialHoliday,
+    getTeamStatusForDate,
+    getTeamWeekStatus,
+  } = useAttendance();
   const [selectedDay, setSelectedDay] = useState<DayAttendance | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
   const [tableFilter, setTableFilter] = useState<string>("all");
+  const [activeViewTab, setActiveViewTab] = useState<"week" | "history">("week");
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayStr = useMemo(() => format(today, "yyyy-MM-dd"), [today]);
@@ -57,13 +69,19 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const [selectedTodayShift, setSelectedTodayShift] = useState<ShiftType>(
     todayRecord?.shiftType || "full"
   );
+  const [todayWorkLocation, setTodayWorkLocation] = useState<WorkLocation>(
+    todayRecord?.workLocation || "office"
+  );
   const [isSavedRecently, setIsSavedRecently] = useState(false);
 
   useEffect(() => {
     if (todayRecord?.shiftType) {
       setSelectedTodayShift(todayRecord.shiftType);
     }
-  }, [todayRecord?.shiftType]);
+    if (todayRecord?.workLocation) {
+      setTodayWorkLocation(todayRecord.workLocation);
+    }
+  }, [todayRecord?.shiftType, todayRecord?.workLocation]);
 
   const handleChooseShift = (shiftType: ShiftType) => {
     setSelectedTodayShift(shiftType);
@@ -71,10 +89,24 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   };
 
   const handleMarkTodayAttendance = () => {
-    markAttendance(user.id, todayStr, selectedTodayShift);
+    markAttendance(
+      user.id,
+      todayStr,
+      selectedTodayShift,
+      undefined,
+      selectedTodayShift === "leave" ? undefined : todayWorkLocation
+    );
     setIsSavedRecently(true);
     setTimeout(() => setIsSavedRecently(false), 2500);
   };
+
+  const teamTodayPresence = useMemo(() => {
+    return getTeamStatusForDate(todayStr);
+  }, [getTeamStatusForDate, todayStr]);
+
+  const teamWeekDays = useMemo(() => {
+    return getTeamWeekStatus();
+  }, [getTeamWeekStatus]);
 
   const handleCellClick = (day: DayAttendance) => {
     setSelectedDay(day);
@@ -167,8 +199,8 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               onClick={() => setIsPreMarkOpen(true)}
               className="flex-1 sm:flex-none h-8 px-3 text-xs gap-1.5 cursor-pointer rounded-xl bg-white/80 dark:bg-black/40 shadow-2xs hover:bg-white dark:hover:bg-black/60 font-semibold"
             >
-              <Plane className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-              <span>Leave</span>
+              <Calendar className="w-3.5 h-3.5 text-cyan-600 shrink-0" />
+              <span>Plan Ahead</span>
             </Button>
           </div>
         </div>
@@ -200,6 +232,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                     : todayRecord.shiftType === "half_afternoon"
                     ? "Afternoon"
                     : "Leave"}
+                  {todayRecord.shiftType !== "leave" && (
+                    <> &bull; {todayRecord.workLocation === "remote" ? "💻 Online" : "🏢 Office"}</>
+                  )}
                 </span>
               </Badge>
             ) : isSundayToday ? (
@@ -212,6 +247,43 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
               </Badge>
             )}
           </div>
+
+          {/* Work Location Mode Selector: In-Office vs Online (WFH) */}
+          {selectedTodayShift !== "leave" && (
+            <div className="flex items-center justify-between p-1 bg-background/80 dark:bg-zinc-800/80 rounded-2xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setTodayWorkLocation("office");
+                  setIsSavedRecently(false);
+                }}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  todayWorkLocation === "office"
+                    ? "bg-emerald-600 text-white shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>🏢 In-Office</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setTodayWorkLocation("remote");
+                  setIsSavedRecently(false);
+                }}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  todayWorkLocation === "remote"
+                    ? "bg-cyan-600 text-white shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Laptop className="w-3.5 h-3.5" />
+                <span>💻 Online (WFH)</span>
+              </button>
+            </div>
+          )}
 
           {/* 4 Shift Choice Cards - Borderless & Elevated */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
@@ -350,6 +422,75 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </CardContent>
       </Card>
 
+      {/* Compact Team Today Presence Strip */}
+      <Card className="border-0 shadow-xs bg-muted/40">
+        <CardContent className="p-3.5 sm:p-4">
+          <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+              <Users className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Team Presence Today</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {format(today, "EEE, MMM d")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {teamTodayPresence.map((member) => {
+              const isSelf = member.user.id === user.id;
+              const isRemote = member.workLocation === "remote";
+              const isOffice = member.workLocation === "office";
+              const isLeave = member.isLeave;
+
+              return (
+                <div
+                  key={member.user.id}
+                  className={`flex items-center gap-2 p-2 rounded-xl transition-all ${
+                    isSelf
+                      ? "bg-background shadow-xs ring-1 ring-emerald-500/40"
+                      : "bg-background/80 shadow-2xs"
+                  }`}
+                >
+                  <div
+                    className={`w-7 h-7 rounded-xl ${
+                      member.user.theme?.avatarBg || "bg-muted"
+                    } flex items-center justify-center text-xs font-bold shrink-0 shadow-2xs`}
+                  >
+                    {member.user.initials}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold text-foreground text-xs truncate flex items-center gap-1">
+                      <span>{member.user.name}</span>
+                      {isSelf && <span className="text-[9px] text-muted-foreground">(You)</span>}
+                    </div>
+                    <div className="text-[10px] truncate text-muted-foreground">
+                      {isLeave ? (
+                        <span className="text-rose-500 font-medium">🏖️ Leave</span>
+                      ) : isRemote ? (
+                        <span className="text-cyan-600 dark:text-cyan-400 font-medium">
+                          💻 Online ({member.shiftType === "full" ? "8h" : "4h"})
+                        </span>
+                      ) : isOffice ? (
+                        <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                          🏢 Office ({member.shiftType === "full" ? "8h" : "4h"})
+                        </span>
+                      ) : member.isSunday ? (
+                        <span>Sunday Off</span>
+                      ) : member.isHoliday ? (
+                        <span className="text-amber-600">Holiday Off</span>
+                      ) : (
+                        <span className="italic text-muted-foreground/70">Pending</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Upcoming Planned Leaves Alert */}
       {upcomingLeaves.length > 0 && (
         <div className="p-3.5 sm:p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs shadow-2xs">
@@ -412,150 +553,280 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </div>
       )}
 
-      {/* Simple Daily Attendance List - Borderless Card */}
+      {/* Team Schedule & Daily Attendance Records */}
       <Card className="border-0 shadow-sm">
-        <CardHeader className="p-4 sm:p-5 pb-2">
+        <CardHeader className="p-4 sm:p-5 pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <History className="w-4 h-4 text-muted-foreground" />
-              <CardTitle className="text-sm sm:text-base font-semibold">
-                Daily Attendance List
-              </CardTitle>
+            {/* View Switcher: Team This Week vs My History */}
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl text-xs self-start sm:self-auto">
+              <Button
+                variant={activeViewTab === "week" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveViewTab("week")}
+                className={`h-7 px-3 text-xs rounded-xl shadow-none font-semibold cursor-pointer ${
+                  activeViewTab === "week"
+                    ? "bg-background text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Users className="w-3.5 h-3.5 mr-1 text-emerald-600" />
+                <span>Team This Week</span>
+              </Button>
+
+              <Button
+                variant={activeViewTab === "history" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveViewTab("history")}
+                className={`h-7 px-3 text-xs rounded-xl shadow-none font-semibold cursor-pointer ${
+                  activeViewTab === "history"
+                    ? "bg-background text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <History className="w-3.5 h-3.5 mr-1 text-muted-foreground" />
+                <span>My History</span>
+              </Button>
             </div>
 
-            {/* Quick Filter Pills */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs self-start sm:self-auto">
-              <Button
-                variant={tableFilter === "all" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTableFilter("all")}
-                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
-              >
-                All
-              </Button>
-              <Button
-                variant={tableFilter === "full" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTableFilter("full")}
-                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
-              >
-                Full
-              </Button>
-              <Button
-                variant={tableFilter === "half" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTableFilter("half")}
-                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
-              >
-                Half
-              </Button>
-              <Button
-                variant={tableFilter === "leave" ? "default" : "ghost"}
-                size="sm"
-                onClick={() => setTableFilter("leave")}
-                className="h-7 px-2.5 text-xs rounded-lg shadow-none"
-              >
-                Leave
-              </Button>
-            </div>
+            {/* Quick Filter Pills for History Tab */}
+            {activeViewTab === "history" && (
+              <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl text-xs self-start sm:self-auto">
+                <Button
+                  variant={tableFilter === "all" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTableFilter("all")}
+                  className="h-7 px-2.5 text-xs rounded-lg shadow-none cursor-pointer"
+                >
+                  All
+                </Button>
+                <Button
+                  variant={tableFilter === "full" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTableFilter("full")}
+                  className="h-7 px-2.5 text-xs rounded-lg shadow-none cursor-pointer"
+                >
+                  Full
+                </Button>
+                <Button
+                  variant={tableFilter === "half" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTableFilter("half")}
+                  className="h-7 px-2.5 text-xs rounded-lg shadow-none cursor-pointer"
+                >
+                  Half
+                </Button>
+                <Button
+                  variant={tableFilter === "leave" ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setTableFilter("leave")}
+                  className="h-7 px-2.5 text-xs rounded-lg shadow-none cursor-pointer"
+                >
+                  Leave
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
 
-        <CardContent className="p-2 sm:p-3">
-          <div className="space-y-1">
-            {recentLogs.slice(0, listLimit).map((day) => {
-              const isToday = day.isToday;
-              const hasRecord = !!day.record;
-              const isFull = day.record?.shiftType === "full";
-              const isMorning = day.record?.shiftType === "half_morning";
-              const isAfternoon = day.record?.shiftType === "half_afternoon";
-              const isLeave = day.record?.shiftType === "leave";
+        <CardContent className="p-3 sm:p-4">
+          {activeViewTab === "week" ? (
+            /* Team This Week (Mon to Sat) */
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between">
+                <span>Who is working online vs in-office this week</span>
+                <span className="text-[11px] font-mono">Mon &ndash; Sat</span>
+              </div>
 
-              return (
-                <div
-                  key={day.date}
-                  onClick={() => handleCellClick(day)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer hover:bg-muted/40 ${
-                    isToday ? "bg-muted/30 font-medium" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Visual Box Graphic */}
-                    {day.isSunday ? (
-                      <div className="w-5 h-5 rounded-[3px] bg-muted/50 shrink-0" />
-                    ) : day.isHoliday ? (
-                      <div className="w-5 h-5 rounded-[3px] bg-amber-400 dark:bg-amber-500 flex items-center justify-center shrink-0 shadow-2xs" title={day.holidayTitle}>
-                        <Sparkles className="w-3 h-3 text-amber-950" />
-                      </div>
-                    ) : isFull ? (
-                      <div className="w-5 h-5 rounded-[3px] bg-[#2da44e] dark:bg-[#3fb950] shrink-0" />
-                    ) : isMorning ? (
-                      <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
-                        <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
-                      </div>
-                    ) : isAfternoon ? (
-                      <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
-                        <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
-                      </div>
-                    ) : isLeave ? (
-                      <div className="w-5 h-5 rounded-[3px] bg-rose-200 dark:bg-rose-900/50 shrink-0" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-[3px] bg-muted/60 shrink-0" />
-                    )}
-
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-                        <span>
-                          {isToday
-                            ? "Today"
-                            : format(day.dateObj, "EEE, MMM d")}
+              {teamWeekDays.map((day) => {
+                return (
+                  <div
+                    key={day.date}
+                    className={`p-3 rounded-2xl transition-all ${
+                      day.isToday
+                        ? "bg-muted/50 ring-1 ring-emerald-500/40 shadow-xs"
+                        : "bg-muted/20 hover:bg-muted/35"
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-xs sm:text-sm text-foreground">
+                          {day.dayName}, {day.formattedDate}
                         </span>
-                        {isToday && (
-                          <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                        {day.isToday && (
+                          <Badge variant="secondary" className="text-[10px] py-0 px-1.5 font-bold">
                             Today
                           </Badge>
                         )}
+                        {day.isHoliday && (
+                          <Badge variant="amber" className="text-[10px] py-0 px-1.5">
+                            {day.holidayTitle || "Holiday Off"}
+                          </Badge>
+                        )}
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
-                        {day.isSunday
-                          ? "Sunday Off"
-                          : day.isHoliday
-                          ? `Official Holiday: ${day.holidayTitle || "Holiday Off"}`
-                          : day.record?.notes
-                          ? day.record.notes
-                          : hasRecord
-                          ? SHIFT_CONFIGS[day.record!.shiftType].timeRange
-                          : "Not recorded"}
+
+                      {/* 4 Teammates for this day */}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 w-full sm:w-auto">
+                        {day.members.map((member) => {
+                          const isSelf = member.user.id === user.id;
+                          const isRemote = member.workLocation === "remote";
+                          const isOffice = member.workLocation === "office";
+                          const isLeave = member.isLeave;
+
+                          return (
+                            <div
+                              key={member.user.id}
+                              className={`flex items-center gap-1.5 p-1.5 px-2 rounded-xl text-xs transition-colors ${
+                                isSelf
+                                  ? "bg-background shadow-2xs font-semibold ring-1 ring-emerald-500/30"
+                                  : "bg-background/80"
+                              }`}
+                            >
+                              <div
+                                className={`w-5 h-5 rounded-md ${
+                                  member.user.theme?.avatarBg || "bg-muted"
+                                } flex items-center justify-center text-[10px] font-bold shrink-0`}
+                              >
+                                {member.user.initials}
+                              </div>
+                              <span className="text-[11px] text-foreground truncate max-w-[50px] xs:max-w-[70px]">
+                                {member.user.name}
+                              </span>
+                              <span className="text-[10px] ml-auto shrink-0">
+                                {isLeave ? (
+                                  <span className="text-rose-500 font-medium">🏖️ Leave</span>
+                                ) : isRemote ? (
+                                  <span className="text-cyan-600 dark:text-cyan-400 font-medium">
+                                    💻 {member.shiftType === "full" ? "Online" : "Morn"}
+                                  </span>
+                                ) : isOffice ? (
+                                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">
+                                    🏢 {member.shiftType === "full" ? "Office" : "Morn"}
+                                  </span>
+                                ) : member.isHoliday ? (
+                                  <span className="text-amber-600">Holiday</span>
+                                ) : (
+                                  <span className="text-muted-foreground/60 italic">-</span>
+                                )}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>
+                );
+              })}
+            </div>
+          ) : (
+            /* My History List */
+            <div className="space-y-1">
+              {recentLogs.slice(0, listLimit).map((day) => {
+                const isToday = day.isToday;
+                const hasRecord = !!day.record;
+                const isFull = day.record?.shiftType === "full";
+                const isMorning = day.record?.shiftType === "half_morning";
+                const isAfternoon = day.record?.shiftType === "half_afternoon";
+                const isLeave = day.record?.shiftType === "leave";
+                const isRemote = day.record?.workLocation === "remote";
 
-                  <div className="flex items-center gap-2">
-                    {day.isSunday ? (
-                      <Badge variant="secondary" className="text-[10px] text-muted-foreground">
-                        Off
-                      </Badge>
-                    ) : day.isHoliday ? (
-                      <Badge variant="amber" className="text-[10px] font-medium">
-                        Holiday Off
-                      </Badge>
-                    ) : hasRecord ? (
-                      <Badge
-                        variant={isLeave ? "destructive" : "emerald"}
-                        className="text-[11px] font-mono font-medium"
-                      >
-                        {SHIFT_CONFIGS[day.record!.shiftType].label}
-                      </Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-[10px] text-muted-foreground">
-                        Tap to log
-                      </Badge>
-                    )}
+                return (
+                  <div
+                    key={day.date}
+                    onClick={() => handleCellClick(day)}
+                    className={`flex items-center justify-between p-3 rounded-xl transition-colors cursor-pointer hover:bg-muted/40 ${
+                      isToday ? "bg-muted/30 font-medium" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {/* Visual Box Graphic */}
+                      {day.isSunday ? (
+                        <div className="w-5 h-5 rounded-[3px] bg-muted/50 shrink-0" />
+                      ) : day.isHoliday ? (
+                        <div className="w-5 h-5 rounded-[3px] bg-amber-400 dark:bg-amber-500 flex items-center justify-center shrink-0 shadow-2xs" title={day.holidayTitle}>
+                          <Sparkles className="w-3 h-3 text-amber-950" />
+                        </div>
+                      ) : isFull ? (
+                        <div className="w-5 h-5 rounded-[3px] bg-[#2da44e] dark:bg-[#3fb950] shrink-0" />
+                      ) : isMorning ? (
+                        <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
+                          <div className="w-1/2 h-full bg-[#2da44e] dark:bg-[#3fb950]" />
+                        </div>
+                      ) : isAfternoon ? (
+                        <div className="w-5 h-5 rounded-[3px] overflow-hidden relative flex shrink-0 bg-zinc-200 dark:bg-zinc-700">
+                          <div className="w-1/2 h-full ml-auto bg-[#2da44e] dark:bg-[#3fb950]" />
+                        </div>
+                      ) : isLeave ? (
+                        <div className="w-5 h-5 rounded-[3px] bg-rose-200 dark:bg-rose-900/50 shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-[3px] bg-muted/60 shrink-0" />
+                      )}
+
+                      <div>
+                        <div className="text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
+                          <span>
+                            {isToday
+                              ? "Today"
+                              : format(day.dateObj, "EEE, MMM d")}
+                          </span>
+                          {isToday && (
+                            <Badge variant="secondary" className="text-[10px] py-0 px-1.5">
+                              Today
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          {day.isSunday
+                            ? "Sunday Off"
+                            : day.isHoliday
+                            ? `Official Holiday: ${day.holidayTitle || "Holiday Off"}`
+                            : day.record?.notes
+                            ? day.record.notes
+                            : hasRecord
+                            ? SHIFT_CONFIGS[day.record!.shiftType].timeRange
+                            : "Not recorded"}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {hasRecord && !isLeave && (
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+                            isRemote
+                              ? "bg-cyan-500/15 text-cyan-700 dark:text-cyan-400"
+                              : "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+                          }`}
+                        >
+                          {isRemote ? "💻 Online" : "🏢 Office"}
+                        </span>
+                      )}
+
+                      {day.isSunday ? (
+                        <Badge variant="secondary" className="text-[10px] text-muted-foreground">
+                          Off
+                        </Badge>
+                      ) : day.isHoliday ? (
+                        <Badge variant="amber" className="text-[10px] font-medium">
+                          Holiday Off
+                        </Badge>
+                      ) : hasRecord ? (
+                        <Badge
+                          variant={isLeave ? "destructive" : "emerald"}
+                          className="text-[11px] font-mono font-medium"
+                        >
+                          {SHIFT_CONFIGS[day.record!.shiftType].label}
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-[10px] text-muted-foreground">
+                          Tap to log
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
 
           {/* List Expand / Limit Controller */}
           <div className="pt-2 pb-1 flex items-center justify-center mt-1">

@@ -8,7 +8,7 @@ import { PreMarkLeaveModal } from "../attendance/PreMarkLeaveModal";
 import { OfficialHolidaysModal } from "../admin/OfficialHolidaysModal";
 import { useAttendance } from "@/lib/attendance-context";
 import { SHIFT_CONFIGS, USER_THEMES } from "@/lib/constants";
-import { format, startOfDay, getDay } from "date-fns";
+import { format, startOfDay, getDay, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,8 @@ import {
   Plane,
   Sparkles,
   Edit3,
+  Laptop,
+  Building2,
 } from "lucide-react";
 
 interface AdminDashboardProps {
@@ -37,7 +39,16 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ adminUser }: AdminDashboardProps) {
-  const { users, records, markAttendance, calculateUserStats, getUpcomingLeaves, deleteAttendance, isOfficialHoliday } = useAttendance();
+  const {
+    users,
+    records,
+    markAttendance,
+    calculateUserStats,
+    getUpcomingLeaves,
+    deleteAttendance,
+    isOfficialHoliday,
+    getTeamWeekStatus,
+  } = useAttendance();
 
   const employees = useMemo(() => users.filter((u) => u.role === "employee"), [users]);
 
@@ -51,6 +62,10 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayStr = useMemo(() => format(today, "yyyy-MM-dd"), [today]);
+
+  const teamWeekDays = useMemo(() => {
+    return getTeamWeekStatus();
+  }, [getTeamWeekStatus]);
 
   const todayOverview = useMemo(() => {
     let full = 0;
@@ -281,15 +296,39 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                       {emp.initials}
                     </div>
                     <div>
-                      <div className="font-semibold text-sm text-foreground flex items-center gap-2">
+                      <div className="font-semibold text-sm text-foreground flex items-center gap-2 flex-wrap">
                         <span>{emp.name}</span>
                         {shift ? (
-                          <Badge
-                            variant={shift === "leave" ? "destructive" : "emerald"}
-                            className="text-[10px] font-mono py-0"
-                          >
-                            {SHIFT_CONFIGS[shift].label}
-                          </Badge>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Badge
+                              variant={shift === "leave" ? "destructive" : "emerald"}
+                              className="text-[10px] font-mono py-0"
+                            >
+                              {SHIFT_CONFIGS[shift].label}
+                            </Badge>
+                            {shift !== "leave" && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  markAttendance(
+                                    emp.id,
+                                    todayStr,
+                                    shift,
+                                    rec?.notes,
+                                    rec?.workLocation === "remote" ? "office" : "remote"
+                                  )
+                                }
+                                className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors cursor-pointer ${
+                                  rec?.workLocation === "remote"
+                                    ? "bg-blue-500/15 text-blue-700 dark:text-blue-300 hover:bg-blue-500/25"
+                                    : "bg-zinc-200/70 dark:bg-zinc-800 text-foreground hover:bg-zinc-300"
+                                }`}
+                                title="Click to toggle In-Office vs Online"
+                              >
+                                {rec?.workLocation === "remote" ? "💻 Online" : "🏢 Office"}
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           <Badge variant="amber" className="text-[10px] font-mono py-0">
                             Pending
@@ -304,7 +343,9 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                     <Button
                       variant={shift === "full" ? "default" : "ghost"}
                       size="sm"
-                      onClick={() => markAttendance(emp.id, todayStr, "full")}
+                      onClick={() =>
+                        markAttendance(emp.id, todayStr, "full", rec?.notes, rec?.workLocation || "office")
+                      }
                       className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
                         shift === "full" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
                       }`}
@@ -314,7 +355,15 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                     <Button
                       variant={shift === "half_morning" ? "default" : "ghost"}
                       size="sm"
-                      onClick={() => markAttendance(emp.id, todayStr, "half_morning")}
+                      onClick={() =>
+                        markAttendance(
+                          emp.id,
+                          todayStr,
+                          "half_morning",
+                          rec?.notes,
+                          rec?.workLocation || "office"
+                        )
+                      }
                       className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
                         shift === "half_morning" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
                       }`}
@@ -325,7 +374,15 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                     <Button
                       variant={shift === "half_afternoon" ? "default" : "ghost"}
                       size="sm"
-                      onClick={() => markAttendance(emp.id, todayStr, "half_afternoon")}
+                      onClick={() =>
+                        markAttendance(
+                          emp.id,
+                          todayStr,
+                          "half_afternoon",
+                          rec?.notes,
+                          rec?.workLocation || "office"
+                        )
+                      }
                       className={`h-8 px-1.5 sm:px-2.5 text-[11px] sm:text-xs cursor-pointer font-medium rounded-xl shadow-2xs ${
                         shift === "half_afternoon" ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-muted/40 hover:bg-muted/70"
                       }`}
@@ -416,6 +473,107 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
         </div>
       )}
 
+      {/* Team Weekly Schedule (Mon - Sat) Radar */}
+      <Card className="border-0 shadow-sm">
+        <CardHeader className="p-4 sm:p-5 pb-2">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <CardTitle className="text-sm sm:text-base font-semibold">
+                Team Schedule This Week &mdash; Work Radar
+              </CardTitle>
+              <p className="text-xs text-muted-foreground">
+                Live team schedule showing who is working in-office, online (remote), or on leave
+              </p>
+            </div>
+            <Badge variant="secondary" className="text-xs font-mono">
+              Mon &ndash; Sat
+            </Badge>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-3 sm:p-4">
+          <div className="space-y-2">
+            {teamWeekDays.map((day) => (
+              <div
+                key={day.date}
+                className={`p-3 rounded-2xl transition-all ${
+                  day.isToday
+                    ? "bg-muted/50 ring-1 ring-emerald-500/40 shadow-xs"
+                    : "bg-muted/20 hover:bg-muted/35"
+                }`}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-xs text-foreground min-w-[75px]">
+                      {day.dayName}
+                    </span>
+                    <span className="text-[11px] text-muted-foreground font-mono">
+                      {format(parseISO(day.date), "MMM d")}
+                    </span>
+                    {day.isToday && (
+                      <Badge variant="emerald" className="text-[9px] py-0 font-mono">
+                        TODAY
+                      </Badge>
+                    )}
+                    {day.isHoliday && (
+                      <Badge variant="amber" className="text-[9px] py-0 font-mono">
+                        {day.holidayTitle || "Holiday"}
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {day.members.map((m) => {
+                      const empTheme = m.user.theme || USER_THEMES[m.user.id] || USER_THEMES["emp-shan"];
+                      const isOnline = m.shiftType !== "leave" && m.workLocation === "remote";
+                      const isOffice = m.shiftType !== "leave" && (m.workLocation === "office" || !m.workLocation);
+                      const isLeave = m.shiftType === "leave";
+
+                      return (
+                        <div
+                          key={m.user.id}
+                          className="flex items-center gap-1.5 p-1.5 rounded-xl bg-background/80 shadow-2xs text-xs"
+                        >
+                          <div
+                            className={`w-5 h-5 rounded-lg ${empTheme.avatarBg} flex items-center justify-center text-[9px] font-bold shrink-0 shadow-2xs`}
+                          >
+                            {m.user.initials}
+                          </div>
+                          <div className="min-w-0 flex-1 truncate">
+                            <div className="font-semibold text-[11px] text-foreground truncate">
+                              {m.user.name}
+                            </div>
+                            <div className="text-[10px] leading-tight truncate">
+                              {isLeave ? (
+                                <span className="text-rose-600 dark:text-rose-400 font-medium">
+                                  🏖️ Leave
+                                </span>
+                              ) : isOnline ? (
+                                <span className="text-blue-600 dark:text-blue-400 font-medium">
+                                  💻 Online
+                                </span>
+                              ) : isOffice ? (
+                                <span className="text-zinc-700 dark:text-zinc-300 font-medium">
+                                  🏢 Office
+                                </span>
+                              ) : (
+                                <span className="text-muted-foreground italic">
+                                  Not set
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Team Roster Table */}
       <Card className="border-0 shadow-sm">
         <CardHeader className="p-4 sm:p-6 pb-3">
@@ -461,7 +619,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                           <div className="font-semibold text-foreground text-xs flex items-center gap-1.5">
                             <span>{user.name}</span>
                             <span className={`text-[9px] font-semibold px-1.5 py-0.2 rounded-full ${empTheme.badge}`}>
-                              {empTheme.name}
+                              {user.designation}
                             </span>
                           </div>
                         </div>
@@ -470,7 +628,7 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
 
                     <TableCell>
                       {config ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           {config.type === "full" && (
                             <div className="w-3.5 h-3.5 rounded-[2px] bg-[#2da44e] dark:bg-[#3fb950]" />
                           )}
@@ -499,6 +657,17 @@ export function AdminDashboard({ adminUser }: AdminDashboardProps) {
                           >
                             {config.shortLabel}
                           </Badge>
+                          {todayRec?.workLocation && config.type !== "leave" && (
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+                                todayRec.workLocation === "remote"
+                                  ? "bg-blue-500/15 text-blue-700 dark:text-blue-300"
+                                  : "bg-zinc-200/70 dark:bg-zinc-800 text-foreground"
+                              }`}
+                            >
+                              {todayRec.workLocation === "remote" ? "💻 Online" : "🏢 Office"}
+                            </span>
+                          )}
                         </div>
                       ) : (
                         <span className="text-xs text-muted-foreground italic">Not marked</span>

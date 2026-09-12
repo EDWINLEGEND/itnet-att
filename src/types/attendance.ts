@@ -2,6 +2,8 @@ export type Role = "admin" | "employee";
 
 export type ShiftType = "full" | "half_morning" | "half_afternoon" | "leave";
 
+export type WorkLocation = "office" | "remote"; // office = In-Office (offline), remote = Online (WFH)
+
 export interface UserTheme {
   name: string;
   pastelBg: string;
@@ -32,6 +34,7 @@ export interface AttendanceRecord {
   userId: string;
   date: string; // YYYY-MM-DD
   shiftType: ShiftType;
+  workLocation?: WorkLocation;
   checkInTime?: string;
   checkOutTime?: string;
   notes?: string;
@@ -56,6 +59,19 @@ export interface DayAttendance {
   holidayTitle?: string;
   isPriorToStart?: boolean;
   record?: AttendanceRecord;
+  workLocation?: WorkLocation;
+}
+
+export interface TeamMemberDayPresence {
+  user: User;
+  record?: AttendanceRecord;
+  shiftType?: ShiftType;
+  workLocation?: WorkLocation;
+  isLeave: boolean;
+  isHoliday?: boolean;
+  holidayTitle?: string;
+  isSunday: boolean;
+  isPending: boolean;
 }
 
 export interface UserAttendanceStats {

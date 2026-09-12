@@ -46,6 +46,15 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
     // Pre-marked Planned Leave in the future
     cellClass +=
       "bg-rose-500/10 border-2 border-dashed border-rose-400/90 dark:border-rose-500 hover:border-rose-600 dark:hover:border-rose-400";
+  } else if (isFuture && shiftType && shiftType !== "leave") {
+    // Pre-marked Future Work Shift (Online vs In-Office)
+    if (record?.workLocation === "remote") {
+      cellClass +=
+        "bg-blue-500/15 border-2 border-dashed border-blue-400/80 dark:border-blue-500 hover:border-blue-600";
+    } else {
+      cellClass +=
+        "bg-emerald-500/15 border-2 border-dashed border-emerald-400/80 dark:border-emerald-500 hover:border-emerald-600";
+    }
   } else if (isFuture) {
     // Future scheduled day
     cellClass +=
@@ -148,6 +157,21 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
                 </div>
               )}
             </div>
+          ) : isFuture && shiftType && shiftType !== "leave" ? (
+            <div>
+              <div className="text-blue-400 font-semibold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-blue-500 inline-block" />
+                <span>Pre-Marked: {record?.workLocation === "remote" ? "💻 Online (WFH)" : "🏢 In-Office"}</span>
+              </div>
+              <div className="text-zinc-400 text-[10px] mt-0.5">
+                Shift: {shiftConfig?.label || "Full Day"}
+              </div>
+              {record?.notes && (
+                <div className="mt-1 text-zinc-300 text-[11px]">
+                  Note: {record.notes}
+                </div>
+              )}
+            </div>
           ) : isFuture ? (
             <span className="text-zinc-500">Upcoming scheduled workday</span>
           ) : shiftConfig ? (
@@ -155,6 +179,12 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
               <div className="flex items-center justify-between gap-4">
                 <span className="text-zinc-400">Shift:</span>
                 <span className="font-medium text-white">{shiftConfig.label}</span>
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-zinc-400">Location:</span>
+                <span className={`font-medium ${record?.workLocation === "remote" ? "text-blue-400" : "text-zinc-200"}`}>
+                  {record?.workLocation === "remote" ? "💻 Online (WFH)" : "🏢 In-Office"}
+                </span>
               </div>
               <div className="flex items-center justify-between gap-4">
                 <span className="text-zinc-400">Timing:</span>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { User, DayAttendance, ShiftType } from "@/types/attendance";
+import { User, DayAttendance, ShiftType, WorkLocation } from "@/types/attendance";
 import { SHIFT_CONFIGS, USER_THEMES } from "@/lib/constants";
 import { useAttendance } from "@/lib/attendance-context";
 import {
@@ -82,6 +82,7 @@ function MarkAttendanceContent({
 
   const [selectedDate, setSelectedDate] = useState<string>(defaultDate);
   const [selectedShift, setSelectedShift] = useState<ShiftType>(initialRecord?.shiftType || "full");
+  const [workLocation, setWorkLocation] = useState<WorkLocation>(initialRecord?.workLocation || "office");
   const [notes, setNotes] = useState<string>(initialRecord?.notes || "");
 
   // When selectedDate is changed within the modal, load any existing record
@@ -90,9 +91,11 @@ function MarkAttendanceContent({
     const existing = records[`${activeUserId}_${newDate}`];
     if (existing) {
       setSelectedShift(existing.shiftType);
+      setWorkLocation(existing.workLocation || "office");
       setNotes(existing.notes || "");
     } else {
       setSelectedShift("full");
+      setWorkLocation("office");
       setNotes("");
     }
   };
@@ -102,9 +105,11 @@ function MarkAttendanceContent({
     const existing = records[`${userId}_${selectedDate}`];
     if (existing) {
       setSelectedShift(existing.shiftType);
+      setWorkLocation(existing.workLocation || "office");
       setNotes(existing.notes || "");
     } else {
       setSelectedShift("full");
+      setWorkLocation("office");
       setNotes("");
     }
   };
@@ -125,7 +130,13 @@ function MarkAttendanceContent({
   const isPlannedLeave = currentRecord?.shiftType === "leave" && currentRecord?.notes?.includes("Planned Leave");
 
   const handleSave = () => {
-    markAttendance(activeUserId, selectedDate, selectedShift, notes.trim() || undefined);
+    markAttendance(
+      activeUserId,
+      selectedDate,
+      selectedShift,
+      notes.trim() || undefined,
+      selectedShift === "leave" ? undefined : workLocation
+    );
     onClose();
   };
 
@@ -409,6 +420,41 @@ function MarkAttendanceContent({
               </button>
             </div>
           </div>
+
+          {/* Work Location Selector */}
+          {selectedShift !== "leave" && (
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Work Location
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setWorkLocation("office")}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    workLocation === "office"
+                      ? "bg-foreground text-background shadow-xs font-semibold"
+                      : "bg-muted/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span>🏢</span>
+                  <span>In-Office</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkLocation("remote")}
+                  className={`py-2 px-3 rounded-xl text-xs font-medium transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                    workLocation === "remote"
+                      ? "bg-blue-600 text-white shadow-xs font-semibold dark:bg-blue-500"
+                      : "bg-muted/40 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <span>💻</span>
+                  <span>Online (WFH)</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">
