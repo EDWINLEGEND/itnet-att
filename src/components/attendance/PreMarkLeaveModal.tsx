@@ -408,7 +408,7 @@ export function PreMarkLeaveModal({
                         ) : member.isHoliday ? (
                           <span className="text-amber-600">Holiday</span>
                         ) : (
-                          <span className="italic text-muted-foreground/70">Not marked</span>
+                          <span className="font-mono text-[10px] text-muted-foreground/80">NA (Not Assigned)</span>
                         )}
                       </div>
                     </div>

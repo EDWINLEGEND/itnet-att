@@ -14,6 +14,7 @@ import {
   subDays,
   parseISO,
   isBefore,
+  addWeeks,
 } from "date-fns";
 import { ATTENDANCE_START_DATE } from "@/lib/mock-data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,7 +51,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPreMarkOpen, setIsPreMarkOpen] = useState(false);
   const [tableFilter, setTableFilter] = useState<string>("all");
-  const [activeViewTab, setActiveViewTab] = useState<"week" | "history">("week");
+  const [activeViewTab, setActiveViewTab] = useState<"this_week" | "next_week" | "history">("this_week");
 
   const today = useMemo(() => startOfDay(new Date()), []);
   const todayStr = useMemo(() => format(today, "yyyy-MM-dd"), [today]);
@@ -105,8 +106,11 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
   }, [getTeamStatusForDate, todayStr]);
 
   const teamWeekDays = useMemo(() => {
-    return getTeamWeekStatus();
-  }, [getTeamWeekStatus]);
+    if (activeViewTab === "next_week") {
+      return getTeamWeekStatus(addWeeks(today, 1));
+    }
+    return getTeamWeekStatus(today);
+  }, [getTeamWeekStatus, activeViewTab, today]);
 
   const handleCellClick = (day: DayAttendance) => {
     setSelectedDay(day);
@@ -557,20 +561,34 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
       <Card className="border-0 shadow-sm">
         <CardHeader className="p-4 sm:p-5 pb-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            {/* View Switcher: Team This Week vs My History */}
-            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl text-xs self-start sm:self-auto">
+            {/* View Switcher: Team This Week vs Team Next Week vs My History */}
+            <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-2xl text-xs self-start sm:self-auto flex-wrap">
               <Button
-                variant={activeViewTab === "week" ? "default" : "ghost"}
+                variant={activeViewTab === "this_week" ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setActiveViewTab("week")}
+                onClick={() => setActiveViewTab("this_week")}
                 className={`h-7 px-3 text-xs rounded-xl shadow-none font-semibold cursor-pointer ${
-                  activeViewTab === "week"
+                  activeViewTab === "this_week"
                     ? "bg-background text-foreground shadow-2xs"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Users className="w-3.5 h-3.5 mr-1 text-emerald-600" />
                 <span>Team This Week</span>
+              </Button>
+
+              <Button
+                variant={activeViewTab === "next_week" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setActiveViewTab("next_week")}
+                className={`h-7 px-3 text-xs rounded-xl shadow-none font-semibold cursor-pointer ${
+                  activeViewTab === "next_week"
+                    ? "bg-background text-foreground shadow-2xs"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 mr-1 text-blue-600" />
+                <span>Team Next Week</span>
               </Button>
 
               <Button
@@ -629,12 +647,18 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
         </CardHeader>
 
         <CardContent className="p-3 sm:p-4">
-          {activeViewTab === "week" ? (
-            /* Team This Week (Mon to Sat) */
+          {activeViewTab !== "history" ? (
+            /* Team Week Schedule (Mon to Sat) */
             <div className="space-y-2">
               <div className="text-xs text-muted-foreground mb-2 flex items-center justify-between">
-                <span>Who is working online vs in-office this week</span>
-                <span className="text-[11px] font-mono">Mon &ndash; Sat</span>
+                <span>
+                  {activeViewTab === "next_week"
+                    ? "Upcoming schedule & work locations for next week"
+                    : "Who is working online vs in-office this week"}
+                </span>
+                <span className="text-[11px] font-mono">
+                  {activeViewTab === "next_week" ? "Next Mon – Sat" : "Mon – Sat"}
+                </span>
               </div>
 
               {teamWeekDays.map((day) => {
@@ -705,7 +729,9 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
                                 ) : member.isHoliday ? (
                                   <span className="text-amber-600">Holiday</span>
                                 ) : (
-                                  <span className="text-muted-foreground/60 italic">-</span>
+                                  <span className="text-muted-foreground/70 font-mono text-[10px]" title="Not Assigned">
+                                    NA
+                                  </span>
                                 )}
                               </span>
                             </div>
@@ -863,7 +889,7 @@ export function EmployeeDashboard({ user }: EmployeeDashboardProps) {
           <AttendanceHeatmap
             user={user}
             onSelectDay={handleCellClick}
-            weeksCount={24}
+            weeksCount={8}
             showTitle={true}
             showLegend={true}
             showStats={true}

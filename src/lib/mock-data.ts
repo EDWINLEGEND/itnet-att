@@ -11,8 +11,8 @@ import {
   addDays,
 } from "date-fns";
 
-export const ATTENDANCE_START_DATE = "2026-09-07";
-const STORAGE_KEY = "itnetai_attendance_records_v4";
+export const ATTENDANCE_START_DATE = "2026-09-01";
+const STORAGE_KEY = "itnetai_attendance_records_v5";
 const HOLIDAYS_STORAGE_KEY = "itnetai_official_holidays_v2";
 
 export function generateSeedRecords(): Record<string, AttendanceRecord> {

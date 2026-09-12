@@ -43,7 +43,7 @@ export function AttendanceHeatmap({
   compact = false,
 }: AttendanceHeatmapProps) {
   const { records, calculateUserStats, isOfficialHoliday } = useAttendance();
-  const [selectedRange, setSelectedRange] = useState<number>(weeksCount);
+  const [selectedRange, setSelectedRange] = useState<number>(weeksCount || 8);
 
   const stats = useMemo(
     () => calculateUserStats(user.id, selectedRange * 7),
@@ -52,10 +52,8 @@ export function AttendanceHeatmap({
 
   const { weeks, monthHeaders } = useMemo(() => {
     const today = startOfDay(new Date());
-    // Display past weeks plus 2 weeks into the future for pre-marked planned leaves
-    const futureWeeksCount = 2;
-    const pastWeeksCount = Math.max(8, selectedRange - futureWeeksCount);
-    const startDate = startOfWeek(subWeeks(today, pastWeeksCount - 1), { weekStartsOn: 1 });
+    // Start strictly from September 1st (commencement of employment)
+    const startDate = startOfWeek(parseISO(ATTENDANCE_START_DATE), { weekStartsOn: 1 });
 
     const weeksList: DayAttendance[][] = [];
     const months: { label: string; colIndex: number }[] = [];
@@ -130,102 +128,102 @@ export function AttendanceHeatmap({
               <div className="flex items-center gap-1 bg-muted/60 p-1 rounded-xl self-start sm:self-auto text-xs">
                 <button
                   type="button"
-                  onClick={() => setSelectedRange(14)}
+                  onClick={() => setSelectedRange(8)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRange === 14
+                    selectedRange === 8
                       ? "bg-background text-foreground shadow-2xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  14 Weeks
+                  8 Weeks
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedRange(24)}
+                  onClick={() => setSelectedRange(12)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRange === 24
+                    selectedRange === 12
                       ? "bg-background text-foreground shadow-2xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  24 Weeks
+                  12 Weeks
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedRange(32)}
+                  onClick={() => setSelectedRange(16)}
                   className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                    selectedRange === 32
+                    selectedRange === 16
                       ? "bg-background text-foreground shadow-2xs font-semibold"
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  32 Weeks
+                  16 Weeks
                 </button>
               </div>
             </div>
           </CardHeader>
         )}
 
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-3 sm:p-6">
           {/* Key Metrics Header */}
           {showStats && (
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-              <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
-                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3 mb-5">
+              <div className="p-3 rounded-2xl bg-muted/30 shadow-2xs min-w-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Attendance
                 </div>
-                <div className="text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">
                   {stats.attendancePercentage}%
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">
                   {stats.attendedDaysCount} / {stats.totalScheduledWorkDays} days
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
-                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="p-3 rounded-2xl bg-muted/30 shadow-2xs min-w-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Full Shifts
                 </div>
-                <div className="text-2xl font-bold font-mono text-foreground mt-1">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1">
                   {stats.fullDaysCount}
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">8h &bull; 10:00 &ndash; 18:00</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">8h &bull; Standard</div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
-                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="p-3 rounded-2xl bg-muted/30 shadow-2xs min-w-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Morning Half
                 </div>
-                <div className="text-2xl font-bold font-mono text-foreground mt-1">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1">
                   {stats.halfMorningCount}
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">4h &bull; 10:00 &ndash; 14:00</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">4h &bull; 10:00–14:00</div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs">
-                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="p-3 rounded-2xl bg-muted/30 shadow-2xs min-w-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Afternoon Half
                 </div>
-                <div className="text-2xl font-bold font-mono text-foreground mt-1">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1">
                   {stats.halfAfternoonCount}
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">4h &bull; 14:00 &ndash; 18:00</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">4h &bull; 14:00–18:00</div>
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-muted/30 shadow-2xs col-span-2 sm:col-span-1">
-                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+              <div className="p-3 rounded-2xl bg-muted/30 shadow-2xs col-span-2 sm:col-span-1 min-w-0">
+                <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider truncate">
                   Leaves
                 </div>
-                <div className="text-2xl font-bold font-mono text-rose-500 mt-1">
+                <div className="text-xl sm:text-2xl font-bold font-mono text-rose-500 mt-1">
                   {stats.leaveDaysCount}
                 </div>
-                <div className="text-[10px] text-muted-foreground mt-0.5">0h scheduled</div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 truncate">0h scheduled</div>
               </div>
             </div>
           )}
 
           {/* GitHub Commit Grid */}
-          <div className="overflow-x-auto pb-2 scrollbar-thin">
+          <div className="overflow-x-auto pb-2 scrollbar-thin touch-pan-x -mx-1 px-1 sm:mx-0 sm:px-0">
             <div className="inline-block min-w-max">
               {/* Months Row */}
               <div className="flex text-[11px] font-medium text-muted-foreground mb-1.5 pl-8 select-none">

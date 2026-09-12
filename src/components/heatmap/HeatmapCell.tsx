@@ -31,9 +31,8 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
   let cellClass = "relative outline-none cursor-pointer transition-all duration-75 select-none ";
 
   if (isPriorToStart) {
-    // Prior to September 7 start date
-    cellClass +=
-      "bg-transparent border border-dashed border-zinc-200/50 dark:border-zinc-800/40 opacity-20 hover:opacity-60";
+    // Prior to September 1 start date: invisible spacer
+    cellClass += "invisible pointer-events-none ";
   } else if (isHoliday) {
     // Official company holiday
     cellClass +=
@@ -56,9 +55,9 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
         "bg-emerald-500/15 border-2 border-dashed border-emerald-400/80 dark:border-emerald-500 hover:border-emerald-600";
     }
   } else if (isFuture) {
-    // Future scheduled day
+    // Future unassigned day: NA (Not Assigned)
     cellClass +=
-      "bg-transparent border border-dashed border-zinc-200 dark:border-zinc-800/60 opacity-30 hover:opacity-80";
+      "bg-transparent border border-dashed border-zinc-200 dark:border-zinc-800/70 opacity-30 hover:opacity-80";
   } else if (!shiftType || shiftType === "leave") {
     // Leave / Absent: Hollow box (no fill)
     cellClass +=
@@ -105,9 +104,15 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
           className={`${dimensionClass} ${cellClass}`}
           aria-label={`${format(dateObj, "MMM d, yyyy")}: ${
             isPriorToStart
-              ? "Prior to tracking start (Sep 7, 2026)"
+              ? "Prior to September"
               : isHoliday
               ? `Holiday: ${holidayTitle || "Official Holiday"}`
+              : isFuture && !shiftType
+              ? "NA - Not Assigned"
+              : isFuture && shiftType === "leave"
+              ? "Planned Leave"
+              : isFuture && shiftType
+              ? `Pre-Marked: ${record?.workLocation === "remote" ? "Online" : "Office"}`
               : shiftConfig?.label || (isSunday ? "Sunday Off" : "Leave")
           }`}
         >
@@ -129,7 +134,7 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
 
         <div className="space-y-0.5 text-zinc-300 text-[11px]">
           {isPriorToStart ? (
-            <span className="text-zinc-500">Prior to tracking start (Sep 7, 2026)</span>
+            <span className="text-zinc-500">Prior to September</span>
           ) : isHoliday ? (
             <div>
               <div className="text-amber-400 font-semibold flex items-center gap-1.5">
@@ -173,7 +178,10 @@ export function HeatmapCell({ day, onClick, size = "md" }: HeatmapCellProps) {
               )}
             </div>
           ) : isFuture ? (
-            <span className="text-zinc-500">Upcoming scheduled workday</span>
+            <div>
+              <div className="font-semibold text-zinc-300">NA &ndash; Not Assigned</div>
+              <div className="text-[10px] text-zinc-500 mt-0.5">No shift scheduled yet</div>
+            </div>
           ) : shiftConfig ? (
             <>
               <div className="flex items-center justify-between gap-4">
